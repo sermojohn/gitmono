@@ -35,12 +35,11 @@ func main() {
 
 		projects, err := differ.Diff()
 		if err != nil {
-			fmt.Printf("failed with error: %v\n", err)
+			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		printProjects(projects)
-
 		os.Exit(0)
 	}
 

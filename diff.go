@@ -35,12 +35,12 @@ func (d *Differ) Diff() ([]string, error) {
 		return nil, err
 	}
 
-	diffedProjectsMap := make(map[string]struct{}, len(d.Projects))
 	diffedProjects := make([]string, 0, len(d.Projects))
+	diffedProjectsIndex := make(map[string]struct{}, len(d.Projects))
 	for _, file := range diffRes.Files {
 		if project, matched := d.matchFile(file.Name); matched {
-			if _, ok := diffedProjectsMap[project]; !ok {
-				diffedProjectsMap[project] = struct{}{}
+			if _, ok := diffedProjectsIndex[project]; !ok {
+				diffedProjectsIndex[project] = struct{}{}
 				diffedProjects = append(diffedProjects, project)
 			}
 		}
