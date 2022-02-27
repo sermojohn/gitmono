@@ -7,36 +7,27 @@ import (
 )
 
 type Differ struct {
-	FromRef  string
-	ToRef    string
-	Projects []string
+	mono *GitMono
 }
 
-func NewDiffer(from string, to string, projects []string) *Differ {
+func NewDiffer(mono *GitMono) *Differ {
 	differ := Differ{
-		FromRef:  from,
-		ToRef:    to,
-		Projects: projects,
+		mono: mono,
 	}
 
 	return &differ
 }
 
-func (d *Differ) Diff() ([]string, error) {
-	repo, err := OpenCurrentRepo()
-	if err != nil {
-		return nil, err
-	}
-
-	diffRes, err := repo.Diff(d.ToRef, 0, 0, 0, git.DiffOptions{
-		Base: d.FromRef,
+func (d *Differ) Diff(from, to string) ([]string, error) {
+	diffRes, err := d.mono.repo.Diff(to, 0, 0, 0, git.DiffOptions{
+		Base: from,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	diffedProjects := make([]string, 0, len(d.Projects))
-	diffedProjectsIndex := make(map[string]struct{}, len(d.Projects))
+	diffedProjects := make([]string, 0, len(d.mono.projects))
+	diffedProjectsIndex := make(map[string]struct{}, len(d.mono.projects))
 	for _, file := range diffRes.Files {
 		if project, matched := d.matchFile(file.Name); matched {
 			if _, ok := diffedProjectsIndex[project]; !ok {
@@ -49,7 +40,7 @@ func (d *Differ) Diff() ([]string, error) {
 }
 
 func (d *Differ) matchFile(name string) (string, bool) {
-	for _, project := range d.Projects {
+	for _, project := range d.mono.projects {
 		if strings.HasPrefix(name, project) {
 			return project, true
 		}
