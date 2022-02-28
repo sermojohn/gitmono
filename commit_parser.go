@@ -35,16 +35,19 @@ func parseConventionalCommit(msg string) bumper {
 
 	// If the commit contains a footer with 'BREAKING CHANGE:' it is always a major bump
 	if strings.Contains(msg, "\nBREAKING CHANGE:") {
+		log.Println("major bump")
 		return majorBumper
 	}
 
 	// if the type/scope in the header includes a trailing '!' this is a breaking change
 	if breaking, ok := matches["breaking"]; ok && breaking == "!" {
+		log.Println("major bump")
 		return majorBumper
 	}
 
 	// if the type in the header is 'feat' it is a minor change
 	if typ, ok := matches["type"]; ok && typ == "feat" {
+		log.Println("minor bump")
 		return minorBumper
 	}
 

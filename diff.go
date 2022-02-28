@@ -41,7 +41,7 @@ func (d *Differ) Diff(from, to string) ([]string, error) {
 
 func (d *Differ) matchFile(name string) (string, bool) {
 	for _, project := range d.mono.projects {
-		if strings.HasPrefix(name, project) {
+		if project == "." || strings.HasPrefix(name, project) {
 			return project, true
 		}
 	}
