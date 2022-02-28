@@ -107,20 +107,15 @@ func (v *Versioner) NewVersion() (*VersionedCommit, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if len(newCommits) == 0 {
 		return nil, fmt.Errorf("no new commits were found")
 	}
 
 	var (
-		commitParser     = CommitParser{}
-		bump             bumper
-		latestCommitHash string
+		commitParser = CommitParser{scheme: v.mono.commitScheme}
+		bump         bumper
 	)
-	for i, cm := range newCommits {
-		if i == 0 {
-			latestCommitHash = cm.ID.String()
-		}
+	for _, cm := range newCommits {
 		bump = commitParser.parseCommit(cm)
 		if bump != nil {
 			break
@@ -136,7 +131,7 @@ func (v *Versioner) NewVersion() (*VersionedCommit, error) {
 	}
 
 	newVersionedCommit := VersionedCommit{
-		CommitID:      latestCommitHash,
+		CommitID:      "HEAD",
 		Version:       newVersion,
 		VersionPrefix: currentVersion.VersionPrefix,
 		Project:       currentVersion.Project,
@@ -174,7 +169,7 @@ func (v *Versioner) InitVersion() ([]*VersionedCommit, error) {
 	initVersion, _ := version.NewSemver("0.1.0")
 	newVersionedCommits := make([]*VersionedCommit, 0, len(projectsMap))
 
-	for project, _ := range projectsMap {
+	for project := range projectsMap {
 		newVersionedCommit := VersionedCommit{
 			CommitID:      "HEAD",
 			Project:       project,

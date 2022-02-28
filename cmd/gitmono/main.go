@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -13,25 +15,32 @@ import (
 // Options holds the CLI args
 type Options struct {
 	DiffSubcommand    bool     `short:"d" description:"Subcommand to print changed projects for a reference range"`
-	VersionSubcommand bool     `short:"v" description:"Subcommand to print the current version of a project"`
+	VersionSubcommand bool     `short:"c" description:"Subcommand to print the current version of a project"`
 	ReleaseSubcommand bool     `short:"r" description:"Subcommand to tag & print the release version of a project"`
 	InitSubcommand    bool     `short:"i" description:"Subcommand to tag & print the init version of unintialized project"`
 	LogSubcommand     bool     `short:"l" description:"Subcommand to print the log of commits of a project"`
 	FromRef           string   `short:"f" description:"The starting point of reference range"`
 	ToRef             string   `short:"t" description:"The ending point of reference range"`
 	Projects          []string `short:"p" description:"The list of project directories to account"`
-	DryRun            bool     `long:"dry" description:"Do not persist any write action"`
+	DryRun            bool     `long:"dry-run" description:"Do not persist any write action"`
+	CommitScheme      string   `long:"commit-scheme" description:"The scheme parse commit messages with"`
+	Verbose           bool     `short:"v" description:"Enable verbose loggging"`
 }
 
 func main() {
 	var opts Options
-
 	_, err := flags.Parse(&opts)
 	checkError(err)
 
+	log.SetOutput(ioutil.Discard)
+	if opts.Verbose {
+		log.SetOutput(os.Stderr)
+	}
+
 	mono, err := gitmono.OpenCurrentRepo(&gitmono.Config{
-		Projects: opts.Projects,
-		DryRun:   opts.DryRun,
+		Projects:     opts.Projects,
+		DryRun:       opts.DryRun,
+		CommitScheme: opts.CommitScheme,
 	})
 	checkError(err)
 
@@ -52,11 +61,10 @@ func main() {
 		}
 
 		versioner := gitmono.NewVersioner(mono)
-
 		currentVersion, err := versioner.CurrentVersion()
 		checkError(err)
-		printVersion(currentVersion)
 
+		printVersion(currentVersion)
 		os.Exit(0)
 	}
 
@@ -67,11 +75,10 @@ func main() {
 		}
 
 		versioner := gitmono.NewVersioner(mono)
-
 		newVersion, err := versioner.NewVersion()
 		checkError(err)
-		printVersion(newVersion)
 
+		printVersion(newVersion)
 		os.Exit(0)
 	}
 
@@ -82,7 +89,6 @@ func main() {
 		}
 
 		logger := gitmono.NewLogger(mono)
-
 		commits, err := logger.Log(opts.FromRef, opts.ToRef)
 		checkError(err)
 
@@ -98,7 +104,6 @@ func main() {
 		for _, newVersion := range newVersions {
 			printVersion(newVersion)
 		}
-
 		os.Exit(0)
 	}
 }
@@ -116,7 +121,7 @@ func printCommits(commits []*git.Commit) {
 }
 
 func printVersion(version *gitmono.VersionedCommit) {
-	fmt.Printf("%v\n", version)
+	fmt.Printf("%s\n", version.GetTag())
 }
 
 func checkError(err error) {
