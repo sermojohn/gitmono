@@ -36,6 +36,7 @@ func (v *Versioner) CurrentVersion() (*VersionedCommit, error) {
 	if len(v.mono.projects) != 1 {
 		return nil, fmt.Errorf("expected single project")
 	}
+	givenProject := v.mono.projects[0]
 
 	tagger := &Tagger{mono: v.mono}
 	tags, err := tagger.Tags()
@@ -45,7 +46,7 @@ func (v *Versioner) CurrentVersion() (*VersionedCommit, error) {
 
 	for _, tag := range tags {
 		project, version := v.parseProjectVersion(tag)
-		if !strings.EqualFold(project, v.mono.projects[0]) {
+		if givenProject != "." && !strings.EqualFold(project, givenProject) {
 			continue
 		}
 
@@ -76,7 +77,7 @@ func (v *Versioner) CurrentVersion() (*VersionedCommit, error) {
 func (v *Versioner) parseProjectVersion(tag string) (string, string) {
 	idx := strings.LastIndex(tag, "/")
 	if idx == -1 {
-		return "", tag
+		return ".", tag
 	}
 
 	return tag[0:idx], tag[idx+1:]
