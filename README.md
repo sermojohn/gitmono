@@ -1,11 +1,15 @@
 # gitmono
 Git wrapper for monorepos
 
+The following commands take one or more project paths as input, that serve as the monorepo subdirectories that are considered separate projects residing in the monorepo.
+This tool provides commands to manage versioning of projects in monorepos.
 
 ## Diff
-Diff subcommand wraps `git diff` and prints out the projects whose scope matches to at least one file included in the diff.
+`-d` flag prints out the projects whose scope matches to at least one file included in the diff of the specified reference range.
 
 ## Version
-Version subcommand wraps `git tag` and extracts the latest version of the specified project.
+`-v` flag extracts the latest version of the specified project.
+`-r` flag releases a new version of the specified project, after looking up for a version bump command in the commits that reference files of that project.
+`-i` flag releases a new version (v0.1.0) for the specified projects that have never been released.
 ## Log
-Log subcommand wraps `git log` and prints out the commits of the specified project.
+`-l` flag prints out the commits of the specified project.
