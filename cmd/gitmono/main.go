@@ -22,9 +22,10 @@ type Options struct {
 	FromRef           string   `short:"f" description:"The starting point of reference range"`
 	ToRef             string   `short:"t" description:"The ending point of reference range"`
 	Projects          []string `short:"p" description:"The list of project directories to account"`
+	Verbose           bool     `short:"v" description:"Enable verbose loggging"`
 	DryRun            bool     `long:"dry-run" description:"Do not persist any write action"`
 	CommitScheme      string   `long:"commit-scheme" description:"The scheme parse commit messages with"`
-	Verbose           bool     `short:"v" description:"Enable verbose loggging"`
+	VersionPrefix     string   `long:"version-prefix" description:"The prefix to prepend to version"`
 }
 
 func main() {
@@ -38,9 +39,10 @@ func main() {
 	}
 
 	mono, err := gitmono.OpenCurrentRepo(&gitmono.Config{
-		Projects:     opts.Projects,
-		DryRun:       opts.DryRun,
-		CommitScheme: opts.CommitScheme,
+		Projects:      opts.Projects,
+		DryRun:        opts.DryRun,
+		CommitScheme:  opts.CommitScheme,
+		VersionPrefix: opts.VersionPrefix,
 	})
 	checkError(err)
 
@@ -64,7 +66,9 @@ func main() {
 		currentVersion, err := versioner.CurrentVersion()
 		checkError(err)
 
-		printVersion(currentVersion)
+		if currentVersion != nil {
+			printVersion(currentVersion)
+		}
 		os.Exit(0)
 	}
 
@@ -78,7 +82,9 @@ func main() {
 		newVersion, err := versioner.NewVersion()
 		checkError(err)
 
-		printVersion(newVersion)
+		if newVersion != nil {
+			printVersion(newVersion)
+		}
 		os.Exit(0)
 	}
 

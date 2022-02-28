@@ -19,7 +19,11 @@ type VersionedCommit struct {
 }
 
 func (vc *VersionedCommit) GetTag() string {
-	return fmt.Sprintf("%s/%s%s", vc.Project, vc.VersionPrefix, vc.Version.String())
+	var projectPrefix string
+	if vc.Project != "." {
+		projectPrefix = fmt.Sprintf("%s/", vc.Project)
+	}
+	return fmt.Sprintf("%s%s%s", projectPrefix, vc.VersionPrefix, vc.Version.String())
 }
 
 func NewVersioner(mono *GitMono) *Versioner {
@@ -51,14 +55,14 @@ func (v *Versioner) CurrentVersion() (*VersionedCommit, error) {
 			return nil, err
 		}
 
-		parsedVersion, versionPrefix, err := v.parseVersion(version)
+		parsedVersion, err := v.parseVersion(version)
 		if err != nil {
 			return nil, err
 		}
 
 		currentVersion := VersionedCommit{
 			Version:       parsedVersion,
-			VersionPrefix: versionPrefix,
+			VersionPrefix: v.mono.versionPrefix,
 			Project:       project,
 			CommitID:      commitHash,
 		}
@@ -78,28 +82,30 @@ func (v *Versioner) parseProjectVersion(tag string) (string, string) {
 	return tag[0:idx], tag[idx+1:]
 }
 
-func (v *Versioner) parseVersion(vv string) (*version.Version, string, error) {
+func (v *Versioner) parseVersion(vv string) (*version.Version, error) {
 	var (
-		versionPrefix string
+		versionPrefix = v.mono.versionPrefix
 		versionValue  = vv
 	)
-	if strings.HasPrefix(vv, "v") {
-		versionPrefix = "v"
-		versionValue = vv[1:]
+	if versionPrefix != "" && strings.HasPrefix(vv, versionPrefix) {
+		versionValue = vv[len(versionPrefix):]
 	}
 
 	parsedVersion, err := version.NewSemver(versionValue)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	return parsedVersion, versionPrefix, nil
+	return parsedVersion, nil
 }
 
 func (v *Versioner) NewVersion() (*VersionedCommit, error) {
 	currentVersion, err := v.CurrentVersion()
 	if err != nil {
 		return nil, err
+	}
+	if currentVersion == nil {
+		return nil, nil
 	}
 
 	logger := NewLogger(v.mono)
@@ -174,7 +180,7 @@ func (v *Versioner) InitVersion() ([]*VersionedCommit, error) {
 			CommitID:      "HEAD",
 			Project:       project,
 			Version:       initVersion,
-			VersionPrefix: "v",
+			VersionPrefix: v.mono.versionPrefix,
 		}
 		newVersionedCommits = append(newVersionedCommits, &newVersionedCommit)
 

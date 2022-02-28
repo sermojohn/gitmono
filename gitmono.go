@@ -6,16 +6,18 @@ import (
 
 // GitMono contains repository instance and command parameters
 type GitMono struct {
-	repo         *git.Repository
-	projects     []string
-	dryRun       bool
-	commitScheme string
+	repo          *git.Repository
+	projects      []string
+	dryRun        bool
+	commitScheme  string
+	versionPrefix string
 }
 
 type Config struct {
-	Projects     []string
-	DryRun       bool
-	CommitScheme string
+	Projects      []string
+	DryRun        bool
+	CommitScheme  string
+	VersionPrefix string
 }
 
 func OpenCurrentRepo(config *Config) (*GitMono, error) {
@@ -25,10 +27,11 @@ func OpenCurrentRepo(config *Config) (*GitMono, error) {
 	}
 
 	monorepo := GitMono{
-		repo:         repo,
-		projects:     config.Projects,
-		dryRun:       config.DryRun,
-		commitScheme: config.CommitScheme,
+		repo:          repo,
+		projects:      config.Projects,
+		dryRun:        config.DryRun,
+		commitScheme:  config.CommitScheme,
+		versionPrefix: config.VersionPrefix,
 	}
 
 	return &monorepo, nil
