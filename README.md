@@ -9,7 +9,9 @@ This tool provides commands to manage versioning of projects in monorepos.
 
 ## Version
 `version` command extracts the latest version of the specified project.
+
 `release` command releases a new version of the specified project, after looking up for a version bump command in the commits that reference files of that project.
+
 `init` command releases a new version (0.1.0) for the specified projects that have never been released.
 ## Log
 `log` command prints out the commits of the specified project.
