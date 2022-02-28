@@ -1,0 +1,35 @@
+project_name: gitmono
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
+  - GOPROXY=https://proxy.golang.org
+builds:
+  - binary: gitmono
+    id: macos
+    main: ./cmd/gitmono
+    ldflags:
+      - -s -w -X main.version={{.Version}}+{{.ShortCommit}}
+    goos:
+      - darwin
+    goarch:
+      - amd64
+
+  - binary: gitmono
+    id: linux
+    main: ./cmd/gitmono
+    ldflags:
+      - -s -w -X main.version={{.Version}}+{{.ShortCommit}}
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^readme:"
+      - "^test:"
+      - Merge pull request
+      - Merge branch

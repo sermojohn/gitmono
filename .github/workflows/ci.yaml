@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+
+jobs:
+  release:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check binary build
+        run: |
+          make build
+          chmod +x ./gitmono/gitmono
+          git clean -fd
+
+      - name: Deploy release
+        run: |
+          curl -sL https://git.io/goreleaser | bash -s -- --parallelism=2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
