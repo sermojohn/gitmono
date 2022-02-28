@@ -26,6 +26,13 @@ jobs:
           chmod +x ./gitmono/gitmono
           git clean -fd
 
+      - name: Release new version
+        run: |
+          curl -Ls https://github.com/sermojohn/gitmono/releases/download/v0.3.0/gitmono_0.3.0_linux_amd64.tar.gz --output - | gunzip -c | tar xopf - -O gitmono>gitmono && chmod +x gitmono
+          ./gitmono release -p . --commit-scheme=conventional --version-prefix=v
+          git push --tags origin
+          git clean -fd
+
       - name: Deploy release
         run: |
           curl -sL https://git.io/goreleaser | bash -s -- --parallelism=2
