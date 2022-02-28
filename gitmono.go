@@ -8,10 +8,12 @@ import (
 type GitMono struct {
 	repo     *git.Repository
 	projects []string
+	dryRun   bool
 }
 
 type Config struct {
 	Projects []string
+	DryRun   bool
 }
 
 func OpenCurrentRepo(config *Config) (*GitMono, error) {
@@ -23,6 +25,7 @@ func OpenCurrentRepo(config *Config) (*GitMono, error) {
 	monorepo := GitMono{
 		repo:     repo,
 		projects: config.Projects,
+		dryRun:   config.DryRun,
 	}
 
 	return &monorepo, nil

@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/gogs/git-module v1.2.0
+	github.com/hashicorp/go-version v1.4.0
 	github.com/jessevdk/go-flags v1.5.0
 )
 
