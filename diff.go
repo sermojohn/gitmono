@@ -26,8 +26,8 @@ func (d *Differ) Diff(from, to string) ([]string, error) {
 		return nil, err
 	}
 
-	diffedProjects := make([]string, 0, len(d.mono.projects))
-	diffedProjectsIndex := make(map[string]struct{}, len(d.mono.projects))
+	diffedProjects := make([]string, 0, len(d.mono.config.Projects))
+	diffedProjectsIndex := make(map[string]struct{}, len(d.mono.config.Projects))
 	for _, file := range diffRes.Files {
 		if project, matched := d.matchFile(file.Name); matched {
 			if _, ok := diffedProjectsIndex[project]; !ok {
@@ -40,7 +40,7 @@ func (d *Differ) Diff(from, to string) ([]string, error) {
 }
 
 func (d *Differ) matchFile(name string) (string, bool) {
-	for _, project := range d.mono.projects {
+	for _, project := range d.mono.config.Projects {
 		if project == "." || strings.HasPrefix(name, project) {
 			return project, true
 		}

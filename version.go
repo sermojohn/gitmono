@@ -2,6 +2,7 @@ package gitmono
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/go-version"
@@ -33,10 +34,10 @@ func NewVersioner(mono *GitMono) *Versioner {
 }
 
 func (v *Versioner) CurrentVersion() (*VersionedCommit, error) {
-	if len(v.mono.projects) != 1 {
+	if len(v.mono.config.Projects) != 1 {
 		return nil, fmt.Errorf("expected single project")
 	}
-	givenProject := v.mono.projects[0]
+	givenProject := v.mono.config.Projects[0]
 
 	tagger := &Tagger{mono: v.mono}
 	tags, err := tagger.Tags()
@@ -63,11 +64,12 @@ func (v *Versioner) CurrentVersion() (*VersionedCommit, error) {
 
 		currentVersion := VersionedCommit{
 			Version:       parsedVersion,
-			VersionPrefix: v.mono.versionPrefix,
+			VersionPrefix: v.mono.config.VersionPrefix,
 			Project:       project,
 			CommitID:      commitHash,
 		}
 
+		log.Printf("current version: %v\n", currentVersion)
 		return &currentVersion, nil
 	}
 
@@ -85,7 +87,7 @@ func (v *Versioner) parseProjectVersion(tag string) (string, string) {
 
 func (v *Versioner) parseVersion(vv string) (*version.Version, error) {
 	var (
-		versionPrefix = v.mono.versionPrefix
+		versionPrefix = v.mono.config.VersionPrefix
 		versionValue  = vv
 	)
 	if versionPrefix != "" && strings.HasPrefix(vv, versionPrefix) {
@@ -119,7 +121,7 @@ func (v *Versioner) NewVersion() (*VersionedCommit, error) {
 	}
 
 	var (
-		commitParser = CommitParser{scheme: v.mono.commitScheme}
+		commitParser = CommitParser{scheme: v.mono.config.CommitScheme}
 		bump         bumper
 	)
 	for _, cm := range newCommits {
@@ -144,7 +146,7 @@ func (v *Versioner) NewVersion() (*VersionedCommit, error) {
 		Project:       currentVersion.Project,
 	}
 
-	if !v.mono.dryRun {
+	if !v.mono.config.DryRun {
 		tagger := &Tagger{mono: v.mono}
 
 		err := tagger.WriteTag(&newVersionedCommit)
@@ -157,8 +159,8 @@ func (v *Versioner) NewVersion() (*VersionedCommit, error) {
 }
 
 func (v *Versioner) InitVersion() ([]*VersionedCommit, error) {
-	projectsMap := make(map[string]struct{}, len(v.mono.projects))
-	for _, project := range v.mono.projects {
+	projectsMap := make(map[string]struct{}, len(v.mono.config.Projects))
+	for _, project := range v.mono.config.Projects {
 		projectsMap[project] = struct{}{}
 	}
 
@@ -181,11 +183,11 @@ func (v *Versioner) InitVersion() ([]*VersionedCommit, error) {
 			CommitID:      "HEAD",
 			Project:       project,
 			Version:       initVersion,
-			VersionPrefix: v.mono.versionPrefix,
+			VersionPrefix: v.mono.config.VersionPrefix,
 		}
 		newVersionedCommits = append(newVersionedCommits, &newVersionedCommit)
 
-		if !v.mono.dryRun {
+		if !v.mono.config.DryRun {
 			err := tagger.WriteTag(&newVersionedCommit)
 			if err != nil {
 				return nil, err
