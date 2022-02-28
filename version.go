@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gogs/git-module"
+	"github.com/hashicorp/go-version"
 )
 
 type Versioner struct {
@@ -12,10 +12,14 @@ type Versioner struct {
 }
 
 type VersionedCommit struct {
-	CommitID string
-	Tag      string
-	Version  string
-	Project  string
+	CommitID      string
+	Version       *version.Version
+	VersionPrefix string
+	Project       string
+}
+
+func (vc *VersionedCommit) GetTag() string {
+	return fmt.Sprintf("%s/%s%s", vc.Project, vc.VersionPrefix, vc.Version.String())
 }
 
 func NewVersioner(mono *GitMono) *Versioner {
@@ -24,11 +28,13 @@ func NewVersioner(mono *GitMono) *Versioner {
 	}
 }
 
-func (v *Versioner) GetCurrentVersion() (*VersionedCommit, error) {
+func (v *Versioner) CurrentVersion() (*VersionedCommit, error) {
 	if len(v.mono.projects) != 1 {
 		return nil, fmt.Errorf("expected single project")
 	}
-	tags, err := v.mono.repo.Tags()
+
+	tagger := &Tagger{mono: v.mono}
+	tags, err := tagger.Tags()
 	if err != nil {
 		return nil, err
 	}
@@ -45,11 +51,16 @@ func (v *Versioner) GetCurrentVersion() (*VersionedCommit, error) {
 			return nil, err
 		}
 
+		parsedVersion, versionPrefix, err := v.parseVersion(version)
+		if err != nil {
+			return nil, err
+		}
+
 		currentVersion := VersionedCommit{
-			Tag:      tag,
-			Version:  version,
-			Project:  project,
-			CommitID: commitHash,
+			Version:       parsedVersion,
+			VersionPrefix: versionPrefix,
+			Project:       project,
+			CommitID:      commitHash,
 		}
 
 		return &currentVersion, nil
@@ -67,8 +78,26 @@ func (v *Versioner) parseProjectVersion(tag string) (string, string) {
 	return tag[0:idx], tag[idx+1:]
 }
 
-func (v *Versioner) GetNewCommits() ([]*git.Commit, error) {
-	currentVersion, err := v.GetCurrentVersion()
+func (v *Versioner) parseVersion(vv string) (*version.Version, string, error) {
+	var (
+		versionPrefix string
+		versionValue  = vv
+	)
+	if strings.HasPrefix(vv, "v") {
+		versionPrefix = "v"
+		versionValue = vv[1:]
+	}
+
+	parsedVersion, err := version.NewSemver(versionValue)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return parsedVersion, versionPrefix, nil
+}
+
+func (v *Versioner) NewVersion() (*VersionedCommit, error) {
+	currentVersion, err := v.CurrentVersion()
 	if err != nil {
 		return nil, err
 	}
@@ -79,5 +108,88 @@ func (v *Versioner) GetNewCommits() ([]*git.Commit, error) {
 		return nil, err
 	}
 
-	return newCommits, nil
+	if len(newCommits) == 0 {
+		return nil, fmt.Errorf("no new commits were found")
+	}
+
+	var (
+		commitParser     = CommitParser{}
+		bump             bumper
+		latestCommitHash string
+	)
+	for i, cm := range newCommits {
+		if i == 0 {
+			latestCommitHash = cm.ID.String()
+		}
+		bump = commitParser.parseCommit(cm)
+		if bump != nil {
+			break
+		}
+	}
+
+	if bump == nil {
+		bump = patchBumper
+	}
+	newVersion, err := bump.bump(currentVersion.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	newVersionedCommit := VersionedCommit{
+		CommitID:      latestCommitHash,
+		Version:       newVersion,
+		VersionPrefix: currentVersion.VersionPrefix,
+		Project:       currentVersion.Project,
+	}
+
+	if !v.mono.dryRun {
+		tagger := &Tagger{mono: v.mono}
+
+		err := tagger.WriteTag(&newVersionedCommit)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &newVersionedCommit, nil
+}
+
+func (v *Versioner) InitVersion() ([]*VersionedCommit, error) {
+	projectsMap := make(map[string]struct{}, len(v.mono.projects))
+	for _, project := range v.mono.projects {
+		projectsMap[project] = struct{}{}
+	}
+
+	tagger := &Tagger{mono: v.mono}
+	tags, err := tagger.Tags()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tag := range tags {
+		project, _ := v.parseProjectVersion(tag)
+		delete(projectsMap, project)
+	}
+
+	initVersion, _ := version.NewSemver("0.1.0")
+	newVersionedCommits := make([]*VersionedCommit, 0, len(projectsMap))
+
+	for project, _ := range projectsMap {
+		newVersionedCommit := VersionedCommit{
+			CommitID:      "HEAD",
+			Project:       project,
+			Version:       initVersion,
+			VersionPrefix: "v",
+		}
+		newVersionedCommits = append(newVersionedCommits, &newVersionedCommit)
+
+		if !v.mono.dryRun {
+			err := tagger.WriteTag(&newVersionedCommit)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return newVersionedCommits, nil
 }
