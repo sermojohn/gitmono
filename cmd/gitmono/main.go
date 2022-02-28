@@ -38,6 +38,10 @@ func main() {
 		log.SetOutput(os.Stderr)
 	}
 
+	if len(opts.Projects) == 0 {
+		opts.Projects = []string{"."}
+	}
+
 	mono, err := gitmono.OpenCurrentRepo(&gitmono.Config{
 		Projects:      opts.Projects,
 		DryRun:        opts.DryRun,
