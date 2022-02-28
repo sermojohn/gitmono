@@ -15,12 +15,12 @@ func NewLogger(mono *GitMono) *Logger {
 }
 
 func (l *Logger) Log(from, to string) ([]*git.Commit, error) {
-	if len(l.mono.projects) != 1 {
+	if len(l.mono.config.Projects) != 1 {
 		return nil, fmt.Errorf("expected single project")
 	}
 
 	return l.mono.repo.Log(fmt.Sprintf("%s..%s", from, to), git.LogOptions{
-		Path: l.mono.projects[0],
+		Path: l.mono.config.Projects[0],
 	})
 }
 

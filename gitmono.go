@@ -6,13 +6,11 @@ import (
 
 // GitMono contains repository instance and command parameters
 type GitMono struct {
-	repo          *git.Repository
-	projects      []string
-	dryRun        bool
-	commitScheme  string
-	versionPrefix string
+	repo   *git.Repository
+	config Config
 }
 
+// Config defines generic configuration applying to multiple commands
 type Config struct {
 	Projects      []string
 	DryRun        bool
@@ -20,19 +18,20 @@ type Config struct {
 	VersionPrefix string
 }
 
-func OpenCurrentRepo(config *Config) (*GitMono, error) {
+// OpenRepo open a git repository and returns the monorepo wrapper
+func OpenRepo(path string) (*GitMono, error) {
 	repo, err := git.Open("./")
 	if err != nil {
 		return nil, err
 	}
 
 	monorepo := GitMono{
-		repo:          repo,
-		projects:      config.Projects,
-		dryRun:        config.DryRun,
-		commitScheme:  config.CommitScheme,
-		versionPrefix: config.VersionPrefix,
+		repo: repo,
 	}
 
 	return &monorepo, nil
+}
+
+func (m *GitMono) SetConfig(config *Config) {
+	m.config = *config
 }
