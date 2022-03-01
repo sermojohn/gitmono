@@ -14,11 +14,11 @@ import (
 
 // Commands holds the CLI args
 type Commands struct {
-	DiffCommander           DiffCommander           `command:"diff"`
-	LogCommander            LogCommander            `command:"log"`
-	VersionCurrentCommander VersionCurrentCommander `command:"version"`
-	VersionReleaseCommander VersionReleaseCommander `command:"release"`
-	VersionInitCommander    VersionInitCommander    `command:"init"`
+	DiffCommand           diffCommand           `command:"diff"`
+	LogCommand            logCommand            `command:"log"`
+	VersionCurrentCommand versionCurrentCommand `command:"version"`
+	VersionReleaseCommand versionReleaseCommand `command:"release"`
+	VersionInitCommand    versionInitCommand    `command:"init"`
 }
 type Options struct {
 	Projects      []string `short:"p" description:"The list of project directories to account"`
@@ -55,11 +55,11 @@ func main() {
 	mono.SetConfig(opts.Config())
 
 	var commands = Commands{
-		DiffCommander:           DiffCommander{mono: mono},
-		LogCommander:            LogCommander{mono: mono},
-		VersionCurrentCommander: VersionCurrentCommander{mono: mono},
-		VersionReleaseCommander: VersionReleaseCommander{mono: mono},
-		VersionInitCommander:    VersionInitCommander{mono: mono},
+		DiffCommand:           diffCommand{mono: mono},
+		LogCommand:            logCommand{mono: mono},
+		VersionCurrentCommand: versionCurrentCommand{mono: mono},
+		VersionReleaseCommand: versionReleaseCommand{mono: mono},
+		VersionInitCommand:    versionInitCommand{mono: mono},
 	}
 	_, err = flags.NewParser(&commands, flags.IgnoreUnknown).Parse()
 	checkError(err)

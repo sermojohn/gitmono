@@ -4,11 +4,11 @@ import (
 	"github.com/sermojohn/gitmono"
 )
 
-type VersionReleaseCommander struct {
+type versionReleaseCommand struct {
 	mono *gitmono.GitMono
 }
 
-func (vrc *VersionReleaseCommander) Execute(args []string) error {
+func (vrc *versionReleaseCommand) Execute(args []string) error {
 	versioner := gitmono.NewVersioner(vrc.mono)
 	newVersion, err := versioner.NewVersion()
 	checkError(err)

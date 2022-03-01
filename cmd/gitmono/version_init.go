@@ -2,11 +2,11 @@ package main
 
 import "github.com/sermojohn/gitmono"
 
-type VersionInitCommander struct {
+type versionInitCommand struct {
 	mono *gitmono.GitMono
 }
 
-func (vic *VersionInitCommander) Execute(args []string) error {
+func (vic *versionInitCommand) Execute(args []string) error {
 	versioner := gitmono.NewVersioner(vic.mono)
 	newVersions, err := versioner.InitVersion()
 	checkError(err)

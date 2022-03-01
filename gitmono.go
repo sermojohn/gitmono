@@ -32,6 +32,7 @@ func OpenRepo(path string) (*GitMono, error) {
 	return &monorepo, nil
 }
 
+// SetConfig configures the tool instance with configuration options
 func (m *GitMono) SetConfig(config *Config) {
 	m.config = *config
 }

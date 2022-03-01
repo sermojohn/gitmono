@@ -5,7 +5,7 @@ import (
 	"github.com/sermojohn/gitmono"
 )
 
-type LogCommander struct {
+type logCommand struct {
 	mono *gitmono.GitMono
 }
 
@@ -14,7 +14,7 @@ type LogOptions struct {
 	ToRef   string `short:"t" description:"The ending point of reference range"`
 }
 
-func (lc *LogCommander) Execute(args []string) error {
+func (lc *logCommand) Execute(args []string) error {
 	var opts LogOptions
 	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
 	checkError(err)
