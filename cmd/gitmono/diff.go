@@ -8,7 +8,8 @@ import (
 )
 
 type diffCommand struct {
-	mono *gitmono.GitMono
+	mono    *gitmono.GitMono
+	options *Options
 }
 
 type DiffOptions struct {
@@ -17,12 +18,12 @@ type DiffOptions struct {
 }
 
 func (dc *diffCommand) Execute(args []string) error {
-	var opts DiffOptions
-	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
+	var diffOpts DiffOptions
+	_, err := flags.NewParser(&diffOpts, flags.IgnoreUnknown).Parse()
 	checkError(err)
 
 	differ := gitmono.NewDiffer(dc.mono)
-	projects, err := differ.Diff(opts.FromRef, opts.ToRef)
+	projects, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef)
 	checkError(err)
 	printProjects(projects)
 

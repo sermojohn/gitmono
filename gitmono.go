@@ -12,27 +12,23 @@ type GitMono struct {
 
 // Config defines generic configuration applying to multiple commands
 type Config struct {
-	Projects      []string
+	// Projects      []string
 	DryRun        bool
 	CommitScheme  string
 	VersionPrefix string
 }
 
 // OpenRepo open a git repository and returns the monorepo wrapper
-func OpenRepo(path string) (*GitMono, error) {
+func OpenRepo(path string, config *Config) (*GitMono, error) {
 	repo, err := git.Open("./")
 	if err != nil {
 		return nil, err
 	}
 
 	monorepo := GitMono{
-		repo: repo,
+		repo:   repo,
+		config: *config,
 	}
 
 	return &monorepo, nil
-}
-
-// SetConfig configures the tool instance with configuration options
-func (m *GitMono) SetConfig(config *Config) {
-	m.config = *config
 }

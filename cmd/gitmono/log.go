@@ -6,9 +6,11 @@ import (
 )
 
 type logCommand struct {
-	mono *gitmono.GitMono
+	mono    *gitmono.GitMono
+	options *Options
 }
 
+// LogOptions contains the options applying to the log command
 type LogOptions struct {
 	FromRef string `short:"f" description:"The starting point of reference range"`
 	ToRef   string `short:"t" description:"The ending point of reference range"`
@@ -20,7 +22,7 @@ func (lc *logCommand) Execute(args []string) error {
 	checkError(err)
 
 	logger := gitmono.NewLogger(lc.mono)
-	commits, err := logger.Log(opts.FromRef, opts.ToRef)
+	commits, err := logger.Log(opts.FromRef, opts.ToRef, lc.options.Projects...)
 	checkError(err)
 
 	printCommits(commits)

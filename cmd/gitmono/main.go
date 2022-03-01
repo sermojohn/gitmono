@@ -30,7 +30,6 @@ type Options struct {
 
 func (opts *Options) Config() *gitmono.Config {
 	return &gitmono.Config{
-		Projects:      opts.Projects,
 		DryRun:        opts.DryRun,
 		CommitScheme:  opts.CommitScheme,
 		VersionPrefix: opts.VersionPrefix,
@@ -38,11 +37,8 @@ func (opts *Options) Config() *gitmono.Config {
 }
 
 func main() {
-	mono, err := gitmono.OpenRepo("./")
-	checkError(err)
-
 	var opts Options
-	_, err = flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
+	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
 	checkError(err)
 	if len(opts.Projects) == 0 {
 		opts.Projects = []string{"."}
@@ -52,14 +48,16 @@ func main() {
 	if opts.Verbose {
 		log.SetOutput(os.Stderr)
 	}
-	mono.SetConfig(opts.Config())
+
+	mono, err := gitmono.OpenRepo("./", opts.Config())
+	checkError(err)
 
 	var commands = Commands{
-		DiffCommand:           diffCommand{mono: mono},
-		LogCommand:            logCommand{mono: mono},
-		VersionCurrentCommand: versionCurrentCommand{mono: mono},
-		VersionReleaseCommand: versionReleaseCommand{mono: mono},
-		VersionInitCommand:    versionInitCommand{mono: mono},
+		DiffCommand:           diffCommand{mono: mono, options: &opts},
+		LogCommand:            logCommand{mono: mono, options: &opts},
+		VersionCurrentCommand: versionCurrentCommand{mono: mono, options: &opts},
+		VersionReleaseCommand: versionReleaseCommand{mono: mono, options: &opts},
+		VersionInitCommand:    versionInitCommand{mono: mono, options: &opts},
 	}
 	_, err = flags.NewParser(&commands, flags.IgnoreUnknown).Parse()
 	checkError(err)
