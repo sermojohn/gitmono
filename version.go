@@ -105,7 +105,10 @@ func (v *Versioner) parseVersion(vv string) (*version.Version, error) {
 // ReleaseNewVersion calculates the new version for the provided project and performs release
 //
 // Returns an error if there are no new commits for the provided project
-func (v *Versioner) ReleaseNewVersion(project string) (*VersionedCommit, error) {
+func (v *Versioner) ReleaseNewVersion(commitID string, project string) (*VersionedCommit, error) {
+	if commitID == "" {
+		commitID = "HEAD"
+	}
 	currentVersion, err := v.GetCurrentVersion(project)
 	if err != nil {
 		return nil, err
@@ -115,7 +118,7 @@ func (v *Versioner) ReleaseNewVersion(project string) (*VersionedCommit, error) 
 	}
 
 	logger := NewLogger(v.mono)
-	newCommits, err := logger.Log(currentVersion.CommitID, "HEAD", project)
+	newCommits, err := logger.Log(currentVersion.CommitID, commitID, project)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +166,10 @@ func (v *Versioner) ReleaseNewVersion(project string) (*VersionedCommit, error) 
 }
 
 // InitVersion identifies the projects with no initial version and performs release using initial version
-func (v *Versioner) InitVersion(projects []string) ([]*VersionedCommit, error) {
+func (v *Versioner) InitVersion(commitID string, projects []string) ([]*VersionedCommit, error) {
+	if commitID == "" {
+		commitID = "HEAD"
+	}
 	projectsMap := make(map[string]struct{}, len(projects))
 	for _, project := range projects {
 		projectsMap[project] = struct{}{}
@@ -180,18 +186,12 @@ func (v *Versioner) InitVersion(projects []string) ([]*VersionedCommit, error) {
 		delete(projectsMap, project)
 	}
 
-	logger := &Logger{mono: v.mono}
-	lastCommitID, err := logger.CommitHashByRevision("HEAD")
-	if err != nil {
-		return nil, err
-	}
-
 	initVersion, _ := version.NewSemver("0.1.0")
 	newVersionedCommits := make([]*VersionedCommit, 0, len(projectsMap))
 
 	for project := range projectsMap {
 		newVersionedCommit := VersionedCommit{
-			CommitID:      lastCommitID,
+			CommitID:      commitID,
 			Project:       project,
 			Version:       initVersion,
 			VersionPrefix: v.mono.config.VersionPrefix,
