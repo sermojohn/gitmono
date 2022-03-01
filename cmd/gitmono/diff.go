@@ -23,7 +23,7 @@ func (dc *diffCommand) Execute(args []string) error {
 	checkError(err)
 
 	differ := gitmono.NewDiffer(dc.mono)
-	projects, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef)
+	projects, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef, dc.options.Projects...)
 	checkError(err)
 	printProjects(projects)
 

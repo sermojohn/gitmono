@@ -30,6 +30,7 @@ func (d *Differ) Diff(from, to string, projects ...string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("diff found %d files", len(diffRes.Files))
 
 	diffedProjects := make([]string, 0, len(projects))
 	diffedProjectsIndex := make(map[string]struct{}, len(projects))

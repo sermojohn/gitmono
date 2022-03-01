@@ -16,9 +16,9 @@ type Versioner struct {
 // VersionedCommit points a commit that is assigned a version
 type VersionedCommit struct {
 	CommitID      string
-	Version       *version.Version
-	VersionPrefix string
 	Project       string
+	VersionPrefix string
+	Version       *version.Version
 }
 
 // GetTag returns the tag to version a commit with
@@ -126,8 +126,12 @@ func (v *Versioner) ReleaseNewVersion(project string) (*VersionedCommit, error) 
 	var (
 		commitParser = commitParser{scheme: v.mono.config.CommitScheme}
 		bump         bumper
+		lastCommitID string
 	)
-	for _, cm := range newCommits {
+	for i, cm := range newCommits {
+		if i == 0 {
+			lastCommitID = cm.ID.String()
+		}
 		bump = commitParser.parseCommit(cm)
 		if bump != nil {
 			break
@@ -143,7 +147,7 @@ func (v *Versioner) ReleaseNewVersion(project string) (*VersionedCommit, error) 
 	}
 
 	newVersionedCommit := VersionedCommit{
-		CommitID:      "HEAD",
+		CommitID:      lastCommitID,
 		Version:       newVersion,
 		VersionPrefix: currentVersion.VersionPrefix,
 		Project:       currentVersion.Project,
@@ -176,12 +180,18 @@ func (v *Versioner) InitVersion(projects []string) ([]*VersionedCommit, error) {
 		delete(projectsMap, project)
 	}
 
+	logger := &Logger{mono: v.mono}
+	lastCommitID, err := logger.CommitHashByRevision("HEAD")
+	if err != nil {
+		return nil, err
+	}
+
 	initVersion, _ := version.NewSemver("0.1.0")
 	newVersionedCommits := make([]*VersionedCommit, 0, len(projectsMap))
 
 	for project := range projectsMap {
 		newVersionedCommit := VersionedCommit{
-			CommitID:      "HEAD",
+			CommitID:      lastCommitID,
 			Project:       project,
 			Version:       initVersion,
 			VersionPrefix: v.mono.config.VersionPrefix,
