@@ -12,6 +12,7 @@ type diffCommand struct {
 	options *Options
 }
 
+// DiffOptions contains the options applying to the diff command
 type DiffOptions struct {
 	FromRef string `short:"f" description:"The starting point of reference range"`
 	ToRef   string `short:"t" description:"The ending point of reference range"`
