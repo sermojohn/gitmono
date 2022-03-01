@@ -2,13 +2,14 @@ package main
 
 import "github.com/sermojohn/gitmono"
 
-type VersionInitCommander struct {
-	mono *gitmono.GitMono
+type versionInitCommand struct {
+	mono    *gitmono.GitMono
+	options *Options
 }
 
-func (vic *VersionInitCommander) Execute(args []string) error {
+func (vic *versionInitCommand) Execute(args []string) error {
 	versioner := gitmono.NewVersioner(vic.mono)
-	newVersions, err := versioner.InitVersion()
+	newVersions, err := versioner.InitVersion(vic.options.Projects)
 	checkError(err)
 
 	for _, newVersion := range newVersions {

@@ -7,8 +7,9 @@ import (
 	"github.com/sermojohn/gitmono"
 )
 
-type DiffCommander struct {
-	mono *gitmono.GitMono
+type diffCommand struct {
+	mono    *gitmono.GitMono
+	options *Options
 }
 
 type DiffOptions struct {
@@ -16,13 +17,13 @@ type DiffOptions struct {
 	ToRef   string `short:"t" description:"The ending point of reference range"`
 }
 
-func (dc *DiffCommander) Execute(args []string) error {
-	var opts DiffOptions
-	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
+func (dc *diffCommand) Execute(args []string) error {
+	var diffOpts DiffOptions
+	_, err := flags.NewParser(&diffOpts, flags.IgnoreUnknown).Parse()
 	checkError(err)
 
 	differ := gitmono.NewDiffer(dc.mono)
-	projects, err := differ.Diff(opts.FromRef, opts.ToRef)
+	projects, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef, dc.options.Projects...)
 	checkError(err)
 	printProjects(projects)
 

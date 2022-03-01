@@ -8,11 +8,11 @@ import (
 	"github.com/gogs/git-module"
 )
 
-type CommitParser struct {
+type commitParser struct {
 	scheme string
 }
 
-func (cp *CommitParser) parseCommit(commit *git.Commit) bumper {
+func (cp *commitParser) parseCommit(commit *git.Commit) bumper {
 	var b bumper
 	msg := commit.Message
 
