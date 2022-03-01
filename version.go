@@ -207,11 +207,9 @@ func (v *Versioner) InitVersion(projects []string) ([]*VersionedCommit, error) {
 }
 
 func (v *Versioner) createReleaseTag(tagger *Tagger, vc *VersionedCommit) error {
+	log.Printf("about to create tag: %s to commit: %s\n", vc.GetTag(), vc.CommitID)
 	if v.mono.config.DryRun {
-		log.Printf("dry-run prevents writing tag: %s to commit: %s\n", vc.GetTag(), vc.CommitID)
 		return nil
 	}
-	err := tagger.CreateTag(vc)
-	log.Printf("created tag: %s to commit: %s, with err: %v\n", vc.GetTag(), vc.CommitID, err)
-	return err
+	return tagger.CreateTag(vc)
 }

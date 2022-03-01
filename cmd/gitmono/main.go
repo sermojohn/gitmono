@@ -12,7 +12,7 @@ import (
 	"github.com/sermojohn/gitmono"
 )
 
-// Commands holds the CLI args
+// Commands contains the CLI commands
 type Commands struct {
 	DiffCommand           diffCommand           `command:"diff"`
 	LogCommand            logCommand            `command:"log"`
@@ -20,6 +20,8 @@ type Commands struct {
 	VersionReleaseCommand versionReleaseCommand `command:"release"`
 	VersionInitCommand    versionInitCommand    `command:"init"`
 }
+
+// Options contains the generic options applying to all commands
 type Options struct {
 	Projects      []string `short:"p" description:"The list of project directories to account"`
 	Verbose       bool     `short:"v" description:"Enable verbose loggging"`
@@ -28,6 +30,7 @@ type Options struct {
 	VersionPrefix string   `long:"version-prefix" description:"The prefix to prepend to version"`
 }
 
+// Config creates the tool configuration from the provided options
 func (opts *Options) Config() *gitmono.Config {
 	return &gitmono.Config{
 		DryRun:        opts.DryRun,
