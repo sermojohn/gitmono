@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/sermojohn/gitmono)](https://goreportcard.com/report/github.com/sermojohn/gitmono)
+
 # gitmono
 Git wrapper for monorepos
 
