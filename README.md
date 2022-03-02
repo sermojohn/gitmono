@@ -3,8 +3,10 @@
 # gitmono
 Git wrapper for monorepos
 
-All commands take one  as input the monorepo project to operate on. The flag defaults to '.' that enables the tool for non-monorepos.
-The project points to a monorepo subdirectory. This tool provides commands to manage versioning of projects in monorepos.
+This tool provides commands to manage versioning of projects in monorepos.
+
+All commands accept flag (`-p`) the monorepo project to operate on. The flag defaults to `.` that enables the tool for non-monorepos.
+The project also defines the subdirectory of the project from the root path. 
 
 ## Commands
 
