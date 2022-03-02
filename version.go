@@ -27,7 +27,12 @@ func (vc *VersionedCommit) GetTag() string {
 	if vc.Project != "." {
 		projectPrefix = fmt.Sprintf("%s/", vc.Project)
 	}
-	return fmt.Sprintf("%s%s%s", projectPrefix, vc.VersionPrefix, vc.Version.String())
+	return fmt.Sprintf("%s%s", projectPrefix, vc.GetVersion())
+}
+
+// GetVersion returns the version part of the tag
+func (vc *VersionedCommit) GetVersion() string {
+	return fmt.Sprintf("%s%s", vc.VersionPrefix, vc.Version.String())
 }
 
 // NewVersioner creates a new versioner instance

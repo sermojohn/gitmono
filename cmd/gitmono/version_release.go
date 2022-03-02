@@ -23,11 +23,15 @@ func (vrc *versionReleaseCommand) Execute(args []string) error {
 
 	var releaseOpts ReleaseOptions
 	_, err := flags.NewParser(&releaseOpts, flags.IgnoreUnknown).Parse()
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	versioner := gitmono.NewVersioner(vrc.mono)
 	newVersion, err := versioner.ReleaseNewVersion(releaseOpts.CommitID, vrc.options.Projects[0])
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	if newVersion != nil {
 		printVersion(newVersion)

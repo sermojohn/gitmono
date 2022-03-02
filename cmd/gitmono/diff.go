@@ -21,11 +21,15 @@ type DiffOptions struct {
 func (dc *diffCommand) Execute(args []string) error {
 	var diffOpts DiffOptions
 	_, err := flags.NewParser(&diffOpts, flags.IgnoreUnknown).Parse()
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	differ := gitmono.NewDiffer(dc.mono)
 	projects, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef, dc.options.Projects...)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	printProjects(projects)
 
 	return nil

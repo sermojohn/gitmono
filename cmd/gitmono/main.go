@@ -26,7 +26,7 @@ type Options struct {
 	Projects      []string `short:"p" description:"The list of project directories to account"`
 	Verbose       bool     `short:"v" description:"Enable verbose loggging"`
 	DryRun        bool     `long:"dry-run" description:"Do not persist any write action"`
-	CommitScheme  string   `long:"commit-scheme" description:"The scheme parse commit messages with"`
+	CommitScheme  string   `long:"commit-scheme" description:"The scheme parse commit messages with (common by default, conventional)"`
 	VersionPrefix string   `long:"version-prefix" description:"The prefix to prepend to version"`
 }
 
@@ -73,7 +73,7 @@ func printCommits(commits []*git.Commit) {
 }
 
 func printVersion(version *gitmono.VersionedCommit) {
-	fmt.Printf("%s\n", version.GetTag())
+	fmt.Printf("%s\n", version.GetVersion())
 }
 
 func checkError(err error) {

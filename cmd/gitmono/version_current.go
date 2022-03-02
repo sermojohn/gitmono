@@ -18,7 +18,9 @@ func (vcc *versionCurrentCommand) Execute(args []string) error {
 
 	versioner := gitmono.NewVersioner(vcc.mono)
 	currentVersion, err := versioner.GetCurrentVersion(vcc.options.Projects[0])
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	if currentVersion != nil {
 		printVersion(currentVersion)
