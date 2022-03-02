@@ -111,9 +111,6 @@ func (v *Versioner) parseVersion(vv string) (*version.Version, error) {
 //
 // Returns an error if there are no new commits for the provided project
 func (v *Versioner) ReleaseNewVersion(commitID string) (*VersionedCommit, error) {
-	if commitID == "" {
-		commitID = "HEAD"
-	}
 	currentVersion, err := v.GetCurrentVersion()
 	if err != nil {
 		return nil, err
@@ -134,12 +131,8 @@ func (v *Versioner) ReleaseNewVersion(commitID string) (*VersionedCommit, error)
 	var (
 		commitParser = commitParser{scheme: v.mono.config.CommitScheme}
 		bump         bumper
-		lastCommitID string
 	)
-	for i, cm := range newCommits {
-		if i == 0 {
-			lastCommitID = cm.ID.String()
-		}
+	for _, cm := range newCommits {
 		bump = commitParser.parseCommit(cm)
 		if bump != nil {
 			break
@@ -155,7 +148,7 @@ func (v *Versioner) ReleaseNewVersion(commitID string) (*VersionedCommit, error)
 	}
 
 	newVersionedCommit := VersionedCommit{
-		CommitID:      lastCommitID,
+		CommitID:      commitID,
 		Version:       newVersion,
 		VersionPrefix: currentVersion.VersionPrefix,
 		Project:       currentVersion.Project,
@@ -171,9 +164,6 @@ func (v *Versioner) ReleaseNewVersion(commitID string) (*VersionedCommit, error)
 
 // InitVersion identifies checks if project has version and releases the initial version
 func (v *Versioner) InitVersion(commitID string) (*VersionedCommit, error) {
-	if commitID == "" {
-		commitID = "HEAD"
-	}
 	currentVersion, err := v.GetCurrentVersion()
 	if err != nil {
 		return nil, err
