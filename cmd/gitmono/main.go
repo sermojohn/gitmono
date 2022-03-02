@@ -38,6 +38,7 @@ func (opts *Options) Config() *gitmono.Config {
 		CommitScheme:  opts.CommitScheme,
 		VersionPrefix: opts.VersionPrefix,
 		PrintTag:      opts.PrintTag,
+		Project:       opts.Project,
 	}
 }
 
@@ -55,8 +56,8 @@ func main() {
 	checkError(err, opts.Verbose)
 
 	var commands = Commands{
-		DiffCommand:           diffCommand{mono: mono, options: &opts},
-		LogCommand:            logCommand{mono: mono, options: &opts},
+		DiffCommand:           diffCommand{mono: mono},
+		LogCommand:            logCommand{mono: mono},
 		VersionCurrentCommand: versionCurrentCommand{mono: mono, options: &opts},
 		VersionReleaseCommand: versionReleaseCommand{mono: mono, options: &opts},
 		VersionInitCommand:    versionInitCommand{mono: mono, options: &opts},

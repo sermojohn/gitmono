@@ -22,7 +22,7 @@ func (vic *versionInitCommand) Execute(args []string) error {
 	}
 
 	versioner := gitmono.NewVersioner(vic.mono)
-	newVersion, err := versioner.InitVersion(versionOpts.CommitID, vic.options.Project)
+	newVersion, err := versioner.InitVersion(versionOpts.CommitID)
 	if err != nil {
 		return err
 	}

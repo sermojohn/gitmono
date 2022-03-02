@@ -42,8 +42,8 @@ func NewVersioner(mono *GitMono) *Versioner {
 	}
 }
 
-// GetCurrentVersion retrieves the current version for the specified project
-func (v *Versioner) GetCurrentVersion(project string) (*VersionedCommit, error) {
+// GetCurrentVersion retrieves the current version
+func (v *Versioner) GetCurrentVersion() (*VersionedCommit, error) {
 	tagger := &Tagger{mono: v.mono}
 	tags, err := tagger.Tags()
 	if err != nil {
@@ -52,7 +52,7 @@ func (v *Versioner) GetCurrentVersion(project string) (*VersionedCommit, error) 
 
 	for _, tag := range tags {
 		parsedProject, version := v.parseProjectVersion(tag)
-		if !strings.EqualFold(parsedProject, project) {
+		if !strings.EqualFold(parsedProject, v.mono.config.Project) {
 			continue
 		}
 
@@ -107,14 +107,14 @@ func (v *Versioner) parseVersion(vv string) (*version.Version, error) {
 	return parsedVersion, nil
 }
 
-// ReleaseNewVersion calculates the new version for the provided project and performs release
+// ReleaseNewVersion calculates the new version and performs release
 //
 // Returns an error if there are no new commits for the provided project
-func (v *Versioner) ReleaseNewVersion(commitID string, project string) (*VersionedCommit, error) {
+func (v *Versioner) ReleaseNewVersion(commitID string) (*VersionedCommit, error) {
 	if commitID == "" {
 		commitID = "HEAD"
 	}
-	currentVersion, err := v.GetCurrentVersion(project)
+	currentVersion, err := v.GetCurrentVersion()
 	if err != nil {
 		return nil, err
 	}
@@ -123,12 +123,12 @@ func (v *Versioner) ReleaseNewVersion(commitID string, project string) (*Version
 	}
 
 	logger := NewLogger(v.mono)
-	newCommits, err := logger.Log(currentVersion.CommitID, commitID, project)
+	newCommits, err := logger.Log(currentVersion.CommitID, commitID)
 	if err != nil {
 		return nil, err
 	}
 	if len(newCommits) == 0 {
-		return nil, fmt.Errorf("no new commits were found")
+		return nil, nil
 	}
 
 	var (
@@ -170,11 +170,11 @@ func (v *Versioner) ReleaseNewVersion(commitID string, project string) (*Version
 }
 
 // InitVersion identifies checks if project has version and releases the initial version
-func (v *Versioner) InitVersion(commitID string, project string) (*VersionedCommit, error) {
+func (v *Versioner) InitVersion(commitID string) (*VersionedCommit, error) {
 	if commitID == "" {
 		commitID = "HEAD"
 	}
-	currentVersion, err := v.GetCurrentVersion(project)
+	currentVersion, err := v.GetCurrentVersion()
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (v *Versioner) InitVersion(commitID string, project string) (*VersionedComm
 
 	newVersionedCommit := VersionedCommit{
 		CommitID:      commitID,
-		Project:       project,
+		Project:       v.mono.config.Project,
 		Version:       initVersion,
 		VersionPrefix: v.mono.config.VersionPrefix,
 	}

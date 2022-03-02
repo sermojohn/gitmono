@@ -8,8 +8,7 @@ import (
 )
 
 type diffCommand struct {
-	mono    *gitmono.GitMono
-	options *Options
+	mono *gitmono.GitMono
 }
 
 // DiffOptions contains the options applying to the diff command
@@ -26,7 +25,7 @@ func (dc *diffCommand) Execute(args []string) error {
 	}
 
 	differ := gitmono.NewDiffer(dc.mono)
-	changedFiles, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef, dc.options.Project)
+	changedFiles, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef)
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,7 @@ type versionCurrentCommand struct {
 
 func (vcc *versionCurrentCommand) Execute(args []string) error {
 	versioner := gitmono.NewVersioner(vcc.mono)
-	currentVersion, err := versioner.GetCurrentVersion(vcc.options.Project)
+	currentVersion, err := versioner.GetCurrentVersion()
 	if err != nil {
 		return err
 	}

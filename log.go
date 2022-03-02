@@ -6,7 +6,7 @@ import (
 	"github.com/gogs/git-module"
 )
 
-// Logger performs log operation for the monorepo projects provided
+// Logger performs log operation for the specifed monorepo project
 type Logger struct {
 	mono *GitMono
 }
@@ -17,9 +17,9 @@ func NewLogger(mono *GitMono) *Logger {
 }
 
 // Log performs log operation for the provided git references range and monorepo project
-func (l *Logger) Log(from, to string, project string) ([]*git.Commit, error) {
+func (l *Logger) Log(from, to string) ([]*git.Commit, error) {
 	logOption := git.LogOptions{
-		Path: project,
+		Path: l.mono.config.Project,
 	}
 
 	return l.mono.repo.Log(fmt.Sprintf("%s..%s", from, to), logOption)

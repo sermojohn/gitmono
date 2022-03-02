@@ -22,7 +22,7 @@ func (vrc *versionReleaseCommand) Execute(args []string) error {
 	}
 
 	versioner := gitmono.NewVersioner(vrc.mono)
-	newVersion, err := versioner.ReleaseNewVersion(releaseOpts.CommitID, vrc.options.Project)
+	newVersion, err := versioner.ReleaseNewVersion(releaseOpts.CommitID)
 	if err != nil {
 		return err
 	}

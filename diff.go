@@ -1,7 +1,6 @@
 package gitmono
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gogs/git-module"
@@ -23,7 +22,7 @@ func NewDiffer(mono *GitMono) *Differ {
 
 // Diff performs diff for the provided git references range
 // Matches changed files to the provided monorepo project and return the list of files
-func (d *Differ) Diff(from, to, project string) ([]string, error) {
+func (d *Differ) Diff(from, to string) ([]string, error) {
 	diffRes, err := d.mono.repo.Diff(to, 0, 0, 0, git.DiffOptions{
 		Base: from,
 	})
@@ -31,14 +30,14 @@ func (d *Differ) Diff(from, to, project string) ([]string, error) {
 		return nil, err
 	}
 
-	changedFiles := []string{}
+	var (
+		changedFiles = []string{}
+		project      = d.mono.config.Project
+	)
 	for _, file := range diffRes.Files {
 		if project == "." || strings.HasPrefix(file.Name, project) {
 			changedFiles = append(changedFiles, file.Name)
 		}
-	}
-	if len(changedFiles) == 0 {
-		return nil, fmt.Errorf("no diff")
 	}
 	return changedFiles, nil
 }
