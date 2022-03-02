@@ -5,20 +5,20 @@ Git wrapper for monorepos
 
 This tool provides commands to manage versioning of projects in monorepos.
 
-All commands accept the monorepo project to operate on using the `-p` flag. When none is specified, the flag defaults to `.` that enables the tool for any repository type (also non monorepo).
+All commands accept the monorepo project to operate on, using the `-p` flag. When none is specified, the flag defaults to `.` that enables the tool for any repository type (also non-monorepo).
 The project value is expected to match a subdirectory of the project from the root path, to support `diff` and `log` commands.
 
 ## Commands
 
-`diff` command returns the modified files for the specified git range belong to the specified project.
+`diff` command prints out the modified files for the specified git reference range that match the project subdirectory.
 
-`log` command prints out the commits of the specified project.
+`log` command prints out the commits for the specified git reference range that match project subdirectory.
 
-`init` command releases the initial version (0.1.0) for the specified project, if it has never been released.
+`init` command releases and prints the initial version (0.1.0) for the specified project, if it has never been released.
 
-`version` command extracts the latest version of the specified project.
+`version` command prints the latest version of the specified project.
 
-`release` command releases a new version of the specified project, after looking up for a version bump command in the commits that reference files of that project.
+`release` command releases and prints a new version of the specified project, after looking up for a version bump command in the commits that reference files of that project.
 
 
 ## Examples
