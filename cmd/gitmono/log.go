@@ -24,7 +24,7 @@ func (lc *logCommand) Execute(args []string) error {
 	}
 
 	logger := gitmono.NewLogger(lc.mono)
-	commits, err := logger.Log(opts.FromRef, opts.ToRef, lc.options.Projects...)
+	commits, err := logger.Log(opts.FromRef, opts.ToRef, lc.options.Project)
 	if err != nil {
 		return err
 	}

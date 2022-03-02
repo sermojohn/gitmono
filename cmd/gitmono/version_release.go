@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jessevdk/go-flags"
 	"github.com/sermojohn/gitmono"
 )
@@ -17,10 +15,6 @@ type versionReleaseCommand struct {
 }
 
 func (vrc *versionReleaseCommand) Execute(args []string) error {
-	if len(vrc.options.Projects) != 1 {
-		return fmt.Errorf("expected single project")
-	}
-
 	var releaseOpts ReleaseOptions
 	_, err := flags.NewParser(&releaseOpts, flags.IgnoreUnknown).Parse()
 	if err != nil {
@@ -28,12 +22,16 @@ func (vrc *versionReleaseCommand) Execute(args []string) error {
 	}
 
 	versioner := gitmono.NewVersioner(vrc.mono)
-	newVersion, err := versioner.ReleaseNewVersion(releaseOpts.CommitID, vrc.options.Projects[0])
+	newVersion, err := versioner.ReleaseNewVersion(releaseOpts.CommitID, vrc.options.Project)
 	if err != nil {
 		return err
 	}
 
 	if newVersion != nil {
+		if vrc.options.PrintTag {
+			printTag(newVersion)
+			return nil
+		}
 		printVersion(newVersion)
 	}
 	return nil

@@ -12,10 +12,10 @@ type GitMono struct {
 
 // Config defines generic configuration applying to multiple commands
 type Config struct {
-	// Projects      []string
 	DryRun        bool
 	CommitScheme  string
 	VersionPrefix string
+	PrintTag      bool
 }
 
 // OpenRepo open a git repository and returns the monorepo wrapper

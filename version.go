@@ -161,8 +161,7 @@ func (v *Versioner) ReleaseNewVersion(commitID string, project string) (*Version
 		Project:       currentVersion.Project,
 	}
 
-	tagger := &Tagger{mono: v.mono}
-	err = v.createReleaseTag(tagger, &newVersionedCommit)
+	err = v.createReleaseTag(&newVersionedCommit)
 	if err != nil {
 		return nil, err
 	}
@@ -170,51 +169,44 @@ func (v *Versioner) ReleaseNewVersion(commitID string, project string) (*Version
 	return &newVersionedCommit, nil
 }
 
-// InitVersion identifies the projects with no initial version and performs release using initial version
-func (v *Versioner) InitVersion(commitID string, projects []string) ([]*VersionedCommit, error) {
+// InitVersion identifies checks if project has version and releases the initial version
+func (v *Versioner) InitVersion(commitID string, project string) (*VersionedCommit, error) {
 	if commitID == "" {
 		commitID = "HEAD"
 	}
-	projectsMap := make(map[string]struct{}, len(projects))
-	for _, project := range projects {
-		projectsMap[project] = struct{}{}
+	currentVersion, err := v.GetCurrentVersion(project)
+	if err != nil {
+		return nil, err
+	}
+	if currentVersion != nil {
+		return nil, nil
 	}
 
-	tagger := &Tagger{mono: v.mono}
-	tags, err := tagger.Tags()
+	initVersion, err := version.NewSemver("0.1.0")
 	if err != nil {
 		return nil, err
 	}
 
-	for _, tag := range tags {
-		project, _ := v.parseProjectVersion(tag)
-		delete(projectsMap, project)
+	newVersionedCommit := VersionedCommit{
+		CommitID:      commitID,
+		Project:       project,
+		Version:       initVersion,
+		VersionPrefix: v.mono.config.VersionPrefix,
+	}
+	err = v.createReleaseTag(&newVersionedCommit)
+	if err != nil {
+		return nil, err
 	}
 
-	initVersion, _ := version.NewSemver("0.1.0")
-	newVersionedCommits := make([]*VersionedCommit, 0, len(projectsMap))
-
-	for project := range projectsMap {
-		newVersionedCommit := VersionedCommit{
-			CommitID:      commitID,
-			Project:       project,
-			Version:       initVersion,
-			VersionPrefix: v.mono.config.VersionPrefix,
-		}
-		newVersionedCommits = append(newVersionedCommits, &newVersionedCommit)
-		err := v.createReleaseTag(tagger, &newVersionedCommit)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return newVersionedCommits, nil
+	return &newVersionedCommit, nil
 }
 
-func (v *Versioner) createReleaseTag(tagger *Tagger, vc *VersionedCommit) error {
+func (v *Versioner) createReleaseTag(vc *VersionedCommit) error {
 	log.Printf("about to create tag: %s to commit: %s\n", vc.GetTag(), vc.CommitID)
 	if v.mono.config.DryRun {
 		return nil
 	}
+
+	tagger := NewTagger(v.mono)
 	return tagger.CreateTag(vc)
 }

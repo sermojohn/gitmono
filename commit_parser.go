@@ -19,7 +19,7 @@ func (cp *commitParser) parseCommit(commit *git.Commit) bumper {
 	switch cp.scheme {
 	case "conventional":
 		b = conventionalCommitParse(msg)
-	case "", "default":
+	case "common":
 		b = defaultCommitParse(msg)
 	}
 

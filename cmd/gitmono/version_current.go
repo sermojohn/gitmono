@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/sermojohn/gitmono"
 )
 
@@ -12,17 +10,17 @@ type versionCurrentCommand struct {
 }
 
 func (vcc *versionCurrentCommand) Execute(args []string) error {
-	if len(vcc.options.Projects) != 1 {
-		return fmt.Errorf("expected single project")
-	}
-
 	versioner := gitmono.NewVersioner(vcc.mono)
-	currentVersion, err := versioner.GetCurrentVersion(vcc.options.Projects[0])
+	currentVersion, err := versioner.GetCurrentVersion(vcc.options.Project)
 	if err != nil {
 		return err
 	}
 
 	if currentVersion != nil {
+		if vcc.options.PrintTag {
+			printTag(currentVersion)
+			return nil
+		}
 		printVersion(currentVersion)
 	}
 

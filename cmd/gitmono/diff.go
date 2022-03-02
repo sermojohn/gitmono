@@ -26,17 +26,17 @@ func (dc *diffCommand) Execute(args []string) error {
 	}
 
 	differ := gitmono.NewDiffer(dc.mono)
-	projects, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef, dc.options.Projects...)
+	changedFiles, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef, dc.options.Project)
 	if err != nil {
 		return err
 	}
-	printProjects(projects)
 
+	printFiles(changedFiles)
 	return nil
 }
 
-func printProjects(projects []string) {
-	for _, project := range projects {
-		fmt.Printf("%s\n", project)
+func printFiles(files []string) {
+	for _, file := range files {
+		fmt.Printf("%s\n", file)
 	}
 }
