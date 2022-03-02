@@ -6,8 +6,7 @@ import (
 )
 
 type logCommand struct {
-	mono    *gitmono.GitMono
-	options *Options
+	mono *gitmono.GitMono
 }
 
 // LogOptions contains the options applying to the log command
@@ -19,11 +18,15 @@ type LogOptions struct {
 func (lc *logCommand) Execute(args []string) error {
 	var opts LogOptions
 	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	logger := gitmono.NewLogger(lc.mono)
-	commits, err := logger.Log(opts.FromRef, opts.ToRef, lc.options.Projects...)
-	checkError(err)
+	commits, err := logger.Log(opts.FromRef, opts.ToRef)
+	if err != nil {
+		return err
+	}
 
 	printCommits(commits)
 	return nil

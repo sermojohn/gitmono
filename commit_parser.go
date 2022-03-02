@@ -18,9 +18,9 @@ func (cp *commitParser) parseCommit(commit *git.Commit) bumper {
 
 	switch cp.scheme {
 	case "conventional":
-		b = parseConventionalCommit(msg)
-	case "", "autotag":
-		b = parseAutotagCommit(msg)
+		b = conventionalCommitParse(msg)
+	case "common":
+		b = defaultCommitParse(msg)
 	}
 
 	return b
@@ -30,7 +30,7 @@ func (cp *commitParser) parseCommit(commit *git.Commit) bumper {
 // it will return the correct version bumper. In the case of non-confirming conventional commit
 // it will return nil and the caller will decide what action to take.
 // https://www.conventionalcommits.org/en/v1.0.0/#summary
-func parseConventionalCommit(msg string) bumper {
+func conventionalCommitParse(msg string) bumper {
 	matches := findNamedMatches(conventionalCommitRex, msg)
 
 	// If the commit contains a footer with 'BREAKING CHANGE:' it is always a major bump
@@ -85,7 +85,7 @@ var (
 //  - [minor] or #minor: minor version bump
 //  - [patch] or #patch: patch version bump
 // If no action is present nil is returned and the caller must decide what action to take.
-func parseAutotagCommit(msg string) bumper {
+func defaultCommitParse(msg string) bumper {
 	if majorRex.MatchString(msg) {
 		log.Println("major bump")
 		return majorBumper

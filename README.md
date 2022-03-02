@@ -3,44 +3,45 @@
 # gitmono
 Git wrapper for monorepos
 
-The following commands take one or more project paths as input (using the `-p` argument).
-The projects are any of the monorepo subdirectories and are considered separate projects residing in the monorepo.
 This tool provides commands to manage versioning of projects in monorepos.
+
+All commands accept the monorepo project to operate on, using the `-p` flag. When none is specified, the flag defaults to `.` that enables the tool for any repository type (also non-monorepo).
+The project value is expected to match a subdirectory of the project from the root path, to support `diff` and `log` commands.
 
 ## Commands
 
-`diff` command prints out the projects whose scope matches to at least one file included in the diff of the specified reference range.
+`diff` command prints out the modified files for the specified git reference range that match the project subdirectory.
 
-`version` command extracts the latest version of the specified project.
+`log` command prints out the commits for the specified git reference range that match project subdirectory.
 
-`release` command releases a new version of the specified project, after looking up for a version bump command in the commits that reference files of that project.
+`init` command releases and prints the initial version (0.1.0) for the specified project, if it has never been released.
 
-`init` command releases a new version (0.1.0) for the specified projects that have never been released.
+`version` command prints the latest version of the specified project.
 
-`log` command prints out the commits of the specified project.
+`release` command releases and prints a new version of the specified project, after looking up for a version bump command in the commits that reference files of that project.
+
 
 ## Examples
 
 1. Initialise the version of all monorepo projects:
 ```
-gitmono init -version-prefix=v -p mod1 -p mod2
+gitmono init --version-prefix=v -p mod1
 
-mod2/0.1.0
-mod1/0.1.0
+v0.1.0
 ```
 
 2. Get the latest version of a monorepo project:
 ```
-gitmono version -p mod1
+gitmono version -p mod1 --version-prefix=v
 
-mod1/0.1.0
+v0.1.0
 ```
 
 3. Get the subset of modified monorepo projects:
 ```
-gitmono diff -f head~1 -t head -p mod2 -p mod1
+gitmono diff -f head~1 -t head -p mod1
 
-mod1
+mod1/go.mod
 ```
 
 4. Release new version for a modified monorepo project:

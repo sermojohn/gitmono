@@ -17,13 +17,21 @@ type versionInitCommand struct {
 func (vic *versionInitCommand) Execute(args []string) error {
 	var versionOpts VersionOptions
 	_, err := flags.NewParser(&versionOpts, flags.IgnoreUnknown).Parse()
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	versioner := gitmono.NewVersioner(vic.mono)
-	newVersions, err := versioner.InitVersion(versionOpts.CommitID, vic.options.Projects)
-	checkError(err)
+	newVersion, err := versioner.InitVersion(versionOpts.CommitID)
+	if err != nil {
+		return err
+	}
 
-	for _, newVersion := range newVersions {
+	if newVersion != nil {
+		if vic.options.PrintTag {
+			printTag(newVersion)
+			return nil
+		}
 		printVersion(newVersion)
 	}
 	return nil
