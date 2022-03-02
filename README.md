@@ -5,8 +5,8 @@ Git wrapper for monorepos
 
 This tool provides commands to manage versioning of projects in monorepos.
 
-All commands accept flag (`-p`) the monorepo project to operate on. The flag defaults to `.` that enables the tool for non-monorepos.
-The project also defines the subdirectory of the project from the root path. 
+All commands accept the monorepo project to operate on using the `-p` flag. When no specified, it defaults to `.` that enables the tool for non-monorepos.
+The project value is expected to match the subdirectory of the project from the root path. 
 
 ## Commands
 
