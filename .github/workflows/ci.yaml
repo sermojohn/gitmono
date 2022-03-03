@@ -12,7 +12,7 @@ on:
         required: false
 
 jobs:
-  pre-commit:
+  lint-and-test:
     name: check pre-commit
     runs-on: ubuntu-20.04
     if: ${{ github.repository == 'sermojohn/gitmono' }}

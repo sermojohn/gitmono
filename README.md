@@ -57,4 +57,3 @@ gitmono log -p mod1 -f head~2 -t head
 
 7fd4cd0d6141b3cbc3c4f0a2206090140d2d7722 fix: mod1 modified
 ```
-
