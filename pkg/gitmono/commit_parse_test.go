@@ -12,7 +12,7 @@ func Test_CommitParse_GetBumperFromCommit(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		scheme string
+		config *ctx.Config
 	}
 	type args struct {
 		commit *git.Commit
@@ -24,8 +24,10 @@ func Test_CommitParse_GetBumperFromCommit(t *testing.T) {
 		want   ctx.Bumper
 	}{
 		{
-			name:   "no commit message scheme",
-			fields: fields{},
+			name: "no commit message scheme",
+			fields: fields{
+				config: &ctx.Config{},
+			},
 			args: args{
 				commit: &git.Commit{Message: "any message #major or breaking!"},
 			},
@@ -34,7 +36,9 @@ func Test_CommitParse_GetBumperFromCommit(t *testing.T) {
 		{
 			name: "conventional message scheme",
 			fields: fields{
-				scheme: "conventional",
+				config: &ctx.Config{
+					CommitScheme: "conventional",
+				},
 			},
 			args: args{
 				commit: &git.Commit{Message: "breaking!"},
@@ -44,7 +48,9 @@ func Test_CommitParse_GetBumperFromCommit(t *testing.T) {
 		{
 			name: "common message scheme",
 			fields: fields{
-				scheme: "common",
+				config: &ctx.Config{
+					CommitScheme: "common",
+				},
 			},
 			args: args{
 				commit: &git.Commit{Message: "#minor"},
@@ -55,7 +61,7 @@ func Test_CommitParse_GetBumperFromCommit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cp := &CommitParse{
-				scheme: tt.fields.scheme,
+				config: tt.fields.config,
 			}
 			if got := cp.GetBumperFromCommit(tt.args.commit); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("commitParser.parseCommit() = %v, want %v", got, tt.want)
