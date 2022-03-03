@@ -1,38 +1,43 @@
 package main
 
 import (
-	"github.com/jessevdk/go-flags"
+	"fmt"
+
 	"github.com/sermojohn/gitmono"
 )
 
-// VersionOptions contains options applying to the version command
-type VersionOptions struct {
+type versionInitOptions struct {
 	CommitID string `short:"c" description:"The commit ID to release initial versions on"`
+	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type versionInitCommand struct {
 	mono    *gitmono.GitMono
-	options *Options
+	cmdOpts versionInitOptions
 }
 
 func (vic *versionInitCommand) Execute(args []string) error {
-	var versionOpts VersionOptions
-	_, err := flags.NewParser(&versionOpts, flags.IgnoreUnknown).Parse()
-	if err != nil {
-		return err
-	}
+	fmt.Printf("diff called with: %v, opts: %v\n", args, vic.cmdOpts)
 
 	versioner := gitmono.NewVersioner(vic.mono)
-	newVersion, err := versioner.InitVersion(versionOpts.CommitID)
+	newVersion, err := versioner.InitVersion(vic.cmdOpts.CommitID)
 	if err != nil {
 		return err
 	}
 
 	if newVersion != nil {
-		if vic.options.PrintTag {
+		if vic.cmdOpts.PrintTag {
 			printTag(newVersion)
 			return nil
 		}
 		printVersion(newVersion)
 	}
 	return nil
+}
+
+func (vic *versionInitCommand) name() string {
+	return "init"
+}
+
+func (vic *versionInitCommand) options() interface{} {
+	return &vic.cmdOpts
 }

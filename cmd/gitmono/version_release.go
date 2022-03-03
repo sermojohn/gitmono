@@ -1,38 +1,39 @@
 package main
 
 import (
-	"github.com/jessevdk/go-flags"
 	"github.com/sermojohn/gitmono"
 )
 
-// ReleaseOptions contains options applying to the release command
-type ReleaseOptions struct {
+type versionReleaseOptions struct {
 	CommitID string `short:"c" description:"The commit ID to release versions on"`
+	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type versionReleaseCommand struct {
 	mono    *gitmono.GitMono
-	options *Options
+	cmdOpts versionReleaseOptions
 }
 
 func (vrc *versionReleaseCommand) Execute(args []string) error {
-	var releaseOpts ReleaseOptions
-	_, err := flags.NewParser(&releaseOpts, flags.IgnoreUnknown).Parse()
-	if err != nil {
-		return err
-	}
-
 	versioner := gitmono.NewVersioner(vrc.mono)
-	newVersion, err := versioner.ReleaseNewVersion(releaseOpts.CommitID)
+	newVersion, err := versioner.ReleaseNewVersion(vrc.cmdOpts.CommitID)
 	if err != nil {
 		return err
 	}
 
 	if newVersion != nil {
-		if vrc.options.PrintTag {
+		if vrc.cmdOpts.PrintTag {
 			printTag(newVersion)
 			return nil
 		}
 		printVersion(newVersion)
 	}
 	return nil
+}
+
+func (vrc *versionReleaseCommand) name() string {
+	return "release"
+}
+
+func (vrc *versionReleaseCommand) options() interface{} {
+	return &vrc.cmdOpts
 }

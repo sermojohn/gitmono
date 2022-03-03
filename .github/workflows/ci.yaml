@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tags:
-        description: 'Build tags'
+        description: 'Build message'
         required: false
 
 jobs:

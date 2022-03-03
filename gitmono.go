@@ -7,7 +7,7 @@ import (
 // GitMono contains repository instance and command parameters
 type GitMono struct {
 	repo   *git.Repository
-	config Config
+	config *Config
 }
 
 // Config defines generic configuration applying to multiple commands
@@ -15,21 +15,23 @@ type Config struct {
 	DryRun        bool
 	CommitScheme  string
 	VersionPrefix string
-	PrintTag      bool
 	Project       string
 }
 
 // OpenRepo open a git repository and returns the monorepo wrapper
-func OpenRepo(path string, config *Config) (*GitMono, error) {
+func OpenRepo(path string) (*GitMono, error) {
 	repo, err := git.Open("./")
 	if err != nil {
 		return nil, err
 	}
 
 	monorepo := GitMono{
-		repo:   repo,
-		config: *config,
+		repo: repo,
 	}
 
 	return &monorepo, nil
+}
+
+func (gm *GitMono) Config(config *Config) {
+	gm.config = config
 }

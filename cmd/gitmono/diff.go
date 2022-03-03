@@ -3,35 +3,38 @@ package main
 import (
 	"fmt"
 
-	"github.com/jessevdk/go-flags"
 	"github.com/sermojohn/gitmono"
 )
 
-type diffCommand struct {
-	mono *gitmono.GitMono
+type diffOptions struct {
+	FromRef string `short:"f" required:"1" description:"The starting point of reference range"`
+	ToRef   string `short:"t" required:"1" description:"The ending point of reference range"`
 }
 
-// DiffOptions contains the options applying to the diff command
-type DiffOptions struct {
-	FromRef string `short:"f" description:"The starting point of reference range"`
-	ToRef   string `short:"t" description:"The ending point of reference range"`
+type diffCommand struct {
+	mono    *gitmono.GitMono
+	cmdOpts diffOptions
 }
 
 func (dc *diffCommand) Execute(args []string) error {
-	var diffOpts DiffOptions
-	_, err := flags.NewParser(&diffOpts, flags.IgnoreUnknown).Parse()
-	if err != nil {
-		return err
-	}
+	fmt.Printf("diff called with: %v, opts: %v\n", args, dc.cmdOpts)
 
 	differ := gitmono.NewDiffer(dc.mono)
-	changedFiles, err := differ.Diff(diffOpts.FromRef, diffOpts.ToRef)
+	changedFiles, err := differ.Diff(dc.cmdOpts.FromRef, dc.cmdOpts.ToRef)
 	if err != nil {
 		return err
 	}
 
 	printFiles(changedFiles)
 	return nil
+}
+
+func (dc *diffCommand) name() string {
+	return "diff"
+}
+
+func (dc *diffCommand) options() interface{} {
+	return &dc.cmdOpts
 }
 
 func printFiles(files []string) {
