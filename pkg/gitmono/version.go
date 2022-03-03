@@ -163,8 +163,19 @@ func (v *Version) bumpVersion(currentVersion *ctx.VersionedCommit, commitID stri
 
 	var bump ctx.Bumper
 	for _, commit := range newCommits {
-		bump = v.commitParser.GetBumperFromCommit(commit)
-		if bump != nil {
+		commitBump := v.commitParser.GetBumperFromCommit(commit)
+
+		res, err := compareBumpers(bump, commitBump)
+		if err != nil {
+			return nil, err
+		}
+
+		// bumper is lower than the commit bumper
+		if res == -1 {
+			bump = commitBump
+		}
+
+		if bump == majorBumper {
 			break
 		}
 	}
@@ -184,4 +195,33 @@ func (v *Version) bumpVersion(currentVersion *ctx.VersionedCommit, commitID stri
 		Project:       currentVersion.Project,
 	}
 	return &newVersionedCommit, nil
+}
+
+// compareBumpers compares two bumpers.
+// Returns -1, 0, or 1 if bumper A is smaller, equal,
+// or larger than the bumper B, respectively.
+func compareBumpers(bumperA, bumperB ctx.Bumper) (int, error) {
+	if bumperA == nil {
+		return -1, nil
+	}
+	if bumperA == bumperB {
+		return 0, nil
+	}
+
+	versionOne, err := version.NewVersion("1.0.0")
+	if err != nil {
+		return 0, err
+	}
+
+	versionA, err := bumperA.Bump(versionOne)
+	if err != nil {
+		return 0, err
+	}
+
+	versionB, err := bumperB.Bump(versionOne)
+	if err != nil {
+		return 0, err
+	}
+
+	return versionA.Compare(versionB), nil
 }
