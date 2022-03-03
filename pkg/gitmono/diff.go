@@ -4,26 +4,27 @@ import (
 	"strings"
 
 	"github.com/gogs/git-module"
+	"github.com/sermojohn/gitmono"
 )
 
-// Differ performs diff operation for a monorepo.
-type Differ struct {
-	mono *GitMono
+// Diff performs diff operation for a monorepo.
+type Diff struct {
+	monorepo *gitmono.MonoRepo
 }
 
-// NewDiffer creates a new differ instance.
-func NewDiffer(mono *GitMono) *Differ {
-	differ := Differ{
-		mono: mono,
+// NewDiff creates a new differ instance.
+func NewDiff(monorepo *gitmono.MonoRepo) *Diff {
+	diff := Diff{
+		monorepo: monorepo,
 	}
 
-	return &differ
+	return &diff
 }
 
 // Diff performs diff for the provided git references range
 // Matches changed files to the provided monorepo project and return the list of files
-func (d *Differ) Diff(from, to string) ([]string, error) {
-	diffRes, err := d.mono.repo.Diff(to, 0, 0, 0, git.DiffOptions{
+func (d *Diff) Diff(from, to string) ([]string, error) {
+	diffRes, err := d.monorepo.Diff(to, 0, 0, 0, git.DiffOptions{
 		Base: from,
 	})
 	if err != nil {
@@ -32,7 +33,7 @@ func (d *Differ) Diff(from, to string) ([]string, error) {
 
 	var (
 		changedFiles = []string{}
-		project      = d.mono.config.Project
+		project      = d.monorepo.GetConfig().Project
 	)
 	for _, file := range diffRes.Files {
 		if project == "." || strings.HasPrefix(file.Name, project) {

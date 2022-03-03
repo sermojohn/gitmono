@@ -22,7 +22,7 @@ func TestMinorBumper(t *testing.T) {
 		tv, err := version.NewVersion(k)
 		checkFatal(t, err)
 
-		nv, err := minorBumper.bump(tv)
+		nv, err := minorBumper.Bump(tv)
 		checkFatal(t, err)
 
 		if nv.String() != v {
@@ -44,7 +44,7 @@ func TestPatchBumper(t *testing.T) {
 		tv, err := version.NewVersion(k)
 		checkFatal(t, err)
 
-		nv, err := patchBumper.bump(tv)
+		nv, err := patchBumper.Bump(tv)
 		checkFatal(t, err)
 
 		if nv.String() != v {
@@ -68,7 +68,7 @@ func TestMajorBumper(t *testing.T) {
 		tv, err := version.NewVersion(k)
 		checkFatal(t, err)
 
-		nv, err := majorBumper.bump(tv)
+		nv, err := majorBumper.Bump(tv)
 		checkFatal(t, err)
 
 		if nv.String() != v {

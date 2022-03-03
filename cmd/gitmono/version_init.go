@@ -1,31 +1,32 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/sermojohn/gitmono"
 )
 
-type versionInitOptions struct {
+type initOptions struct {
 	CommitID string `short:"c" description:"The commit ID to release initial versions on"`
 	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
-type versionInitCommand struct {
-	mono    *gitmono.GitMono
-	cmdOpts versionInitOptions
+type initCommand struct {
+	versioner gitmono.Versioner
+	cmdOpts   initOptions
 }
 
-func (vic *versionInitCommand) Execute(args []string) error {
-	fmt.Printf("diff called with: %v, opts: %v\n", args, vic.cmdOpts)
+func newInitCommand(versioner gitmono.Versioner) *initCommand {
+	return &initCommand{
+		versioner: versioner,
+	}
+}
 
-	versioner := gitmono.NewVersioner(vic.mono)
-	newVersion, err := versioner.InitVersion(vic.cmdOpts.CommitID)
+func (ic *initCommand) Execute(args []string) error {
+	newVersion, err := ic.versioner.InitVersion(ic.cmdOpts.CommitID)
 	if err != nil {
 		return err
 	}
 
 	if newVersion != nil {
-		if vic.cmdOpts.PrintTag {
+		if ic.cmdOpts.PrintTag {
 			printTag(newVersion)
 			return nil
 		}
@@ -34,10 +35,10 @@ func (vic *versionInitCommand) Execute(args []string) error {
 	return nil
 }
 
-func (vic *versionInitCommand) name() string {
+func (ic *initCommand) name() string {
 	return "init"
 }
 
-func (vic *versionInitCommand) options() interface{} {
-	return &vic.cmdOpts
+func (ic *initCommand) options() interface{} {
+	return &ic.cmdOpts
 }

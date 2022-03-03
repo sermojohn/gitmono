@@ -6,14 +6,26 @@ import (
 	"strings"
 
 	"github.com/gogs/git-module"
+	"github.com/sermojohn/gitmono"
 )
 
-type commitParser struct {
+// CommitParse implements commit parsing
+type CommitParse struct {
 	scheme string
 }
 
-func (cp *commitParser) parseCommit(commit *git.Commit) bumper {
-	var b bumper
+// NewCommitParse creates a new commit parser
+func NewCommitParse(monorepo *gitmono.MonoRepo) *CommitParse {
+	return &CommitParse{
+		scheme: monorepo.GetConfig().CommitScheme,
+	}
+}
+
+// GetBumperFromCommit parses commit message based on scheme
+//
+// Returns the bumper to use for this commit or nil
+func (cp *CommitParse) GetBumperFromCommit(commit *git.Commit) gitmono.Bumper {
+	var b gitmono.Bumper
 	msg := commit.Message
 
 	switch cp.scheme {
@@ -30,7 +42,7 @@ func (cp *commitParser) parseCommit(commit *git.Commit) bumper {
 // it will return the correct version bumper. In the case of non-confirming conventional commit
 // it will return nil and the caller will decide what action to take.
 // https://www.conventionalcommits.org/en/v1.0.0/#summary
-func conventionalCommitParse(msg string) bumper {
+func conventionalCommitParse(msg string) gitmono.Bumper {
 	matches := findNamedMatches(conventionalCommitRex, msg)
 
 	// If the commit contains a footer with 'BREAKING CHANGE:' it is always a major bump
@@ -85,7 +97,7 @@ var (
 //  - [minor] or #minor: minor version bump
 //  - [patch] or #patch: patch version bump
 // If no action is present nil is returned and the caller must decide what action to take.
-func defaultCommitParse(msg string) bumper {
+func defaultCommitParse(msg string) gitmono.Bumper {
 	if majorRex.MatchString(msg) {
 		log.Println("major bump")
 		return majorBumper

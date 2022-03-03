@@ -1,13 +1,9 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/sermojohn/gitmono"
-)
+import "github.com/sermojohn/gitmono"
 
 type logCommand struct {
-	mono    *gitmono.GitMono
+	logger  gitmono.Logger
 	cmdOpts logOptions
 }
 type logOptions struct {
@@ -15,12 +11,15 @@ type logOptions struct {
 	ToRef   string `short:"t" description:"The ending point of reference range"`
 }
 
+func newLogCommand(logger gitmono.Logger) *logCommand {
+	return &logCommand{
+		logger: logger,
+	}
+}
+
 // Execute trigger the log command
 func (lc *logCommand) Execute(args []string) error {
-	fmt.Printf("diff called with: %v, opts: %v\n", args, lc.cmdOpts)
-
-	logger := gitmono.NewLogger(lc.mono)
-	commits, err := logger.Log(lc.cmdOpts.FromRef, lc.cmdOpts.ToRef)
+	commits, err := lc.logger.Log(lc.cmdOpts.FromRef, lc.cmdOpts.ToRef)
 	if err != nil {
 		return err
 	}
