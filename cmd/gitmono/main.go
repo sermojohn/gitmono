@@ -9,7 +9,8 @@ import (
 
 	"github.com/gogs/git-module"
 	"github.com/jessevdk/go-flags"
-	"github.com/sermojohn/gitmono"
+	ctx "github.com/sermojohn/gitmono"
+	"github.com/sermojohn/gitmono/pkg/gitmono"
 )
 
 // Options contains the generic options applying to all commands
@@ -29,8 +30,8 @@ type command interface {
 }
 
 // Config creates the tool configuration from the provided options
-func (opts *Options) Config() *gitmono.Config {
-	return &gitmono.Config{
+func (opts *Options) Config() *ctx.Config {
+	return &ctx.Config{
 		Project:       opts.Project,
 		DryRun:        opts.DryRun,
 		CommitScheme:  opts.CommitScheme,
@@ -39,24 +40,25 @@ func (opts *Options) Config() *gitmono.Config {
 }
 
 func main() {
-	mono, err := gitmono.OpenRepo("./")
+	monorepo, err := ctx.OpenRepo("./")
 	checkError(err, true)
 
+	ctx := newContext(monorepo)
 	var (
 		opts     Options
 		commands = []command{
-			&diffCommand{mono: mono},
-			&logCommand{mono: mono},
-			&versionInitCommand{mono: mono},
-			&versionReleaseCommand{mono: mono},
-			&versionCurrentCommand{mono: mono},
+			newDiffCommand(ctx.differ),
+			newLogCommand(ctx.logger),
+			newInitCommand(ctx.versioner),
+			newReleaseCommand(ctx.versioner),
+			newVersionCommand(ctx.versioner),
 		}
 		flagsParser = flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag)
 	)
 
 	// inject options to global component
 	flagsParser.CommandHandler = func(command flags.Commander, args []string) error {
-		mono.Config(opts.Config())
+		monorepo.SetConfig(opts.Config())
 		return command.Execute(args)
 	}
 	for _, command := range commands {
@@ -83,11 +85,11 @@ func printCommits(commits []*git.Commit) {
 	}
 }
 
-func printVersion(version *gitmono.VersionedCommit) {
+func printVersion(version *ctx.VersionedCommit) {
 	fmt.Printf("%s\n", version.GetVersion())
 }
 
-func printTag(version *gitmono.VersionedCommit) {
+func printTag(version *ctx.VersionedCommit) {
 	fmt.Printf("%s\n", version.GetTag())
 }
 
@@ -97,5 +99,26 @@ func checkError(err error, verbose bool) {
 			fmt.Println(err)
 		}
 		os.Exit(1)
+	}
+}
+
+type context struct {
+	versioner ctx.Versioner
+	tagger    ctx.Tagger
+	differ    ctx.Differ
+	logger    ctx.Logger
+}
+
+func newContext(monorepo *ctx.MonoRepo) *context {
+	log := gitmono.NewLog(monorepo)
+	tag := gitmono.NewTag(monorepo)
+	diff := gitmono.NewDiff(monorepo)
+	commitParse := gitmono.NewCommitParse(monorepo)
+	version := gitmono.NewVersion(monorepo, log, tag, commitParse)
+	return &context{
+		versioner: version,
+		tagger:    tag,
+		differ:    diff,
+		logger:    log,
 	}
 }

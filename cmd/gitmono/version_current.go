@@ -4,23 +4,28 @@ import (
 	"github.com/sermojohn/gitmono"
 )
 
-type versionCurrentOptions struct {
+type versionOptions struct {
 	PrintTag bool `long:"print-tag" description:"Print tag instead of version"`
 }
-type versionCurrentCommand struct {
-	mono    *gitmono.GitMono
-	cmdOpts versionCurrentOptions
+type versionCommand struct {
+	versioner gitmono.Versioner
+	cmdOpts   versionOptions
 }
 
-func (vcc *versionCurrentCommand) Execute(args []string) error {
-	versioner := gitmono.NewVersioner(vcc.mono)
-	currentVersion, err := versioner.GetCurrentVersion()
+func newVersionCommand(versioner gitmono.Versioner) *versionCommand {
+	return &versionCommand{
+		versioner: versioner,
+	}
+}
+
+func (vc *versionCommand) Execute(args []string) error {
+	currentVersion, err := vc.versioner.GetCurrentVersion()
 	if err != nil {
 		return err
 	}
 
 	if currentVersion != nil {
-		if vcc.cmdOpts.PrintTag {
+		if vc.cmdOpts.PrintTag {
 			printTag(currentVersion)
 			return nil
 		}
@@ -30,10 +35,10 @@ func (vcc *versionCurrentCommand) Execute(args []string) error {
 	return nil
 }
 
-func (vcc *versionCurrentCommand) name() string {
+func (vc *versionCommand) name() string {
 	return "version"
 }
 
-func (vcc *versionCurrentCommand) options() interface{} {
-	return &vcc.cmdOpts
+func (vc *versionCommand) options() interface{} {
+	return &vc.cmdOpts
 }

@@ -12,15 +12,18 @@ type diffOptions struct {
 }
 
 type diffCommand struct {
-	mono    *gitmono.GitMono
+	differ  gitmono.Differ
 	cmdOpts diffOptions
 }
 
-func (dc *diffCommand) Execute(args []string) error {
-	fmt.Printf("diff called with: %v, opts: %v\n", args, dc.cmdOpts)
+func newDiffCommand(differ gitmono.Differ) *diffCommand {
+	return &diffCommand{
+		differ: differ,
+	}
+}
 
-	differ := gitmono.NewDiffer(dc.mono)
-	changedFiles, err := differ.Diff(dc.cmdOpts.FromRef, dc.cmdOpts.ToRef)
+func (dc *diffCommand) Execute(args []string) error {
+	changedFiles, err := dc.differ.Diff(dc.cmdOpts.FromRef, dc.cmdOpts.ToRef)
 	if err != nil {
 		return err
 	}
