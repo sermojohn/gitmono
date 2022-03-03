@@ -16,14 +16,13 @@ type diffCommand struct {
 	cmdOpts diffOptions
 }
 
-// newDiffCommand creates a diff command and injects dependencies
 func newDiffCommand(differ gitmono.Differ) *diffCommand {
-	return &diffCommand{}
+	return &diffCommand{
+		differ: differ,
+	}
 }
 
 func (dc *diffCommand) Execute(args []string) error {
-	fmt.Printf("diff called with: %v, opts: %v\n", args, dc.cmdOpts)
-
 	changedFiles, err := dc.differ.Diff(dc.cmdOpts.FromRef, dc.cmdOpts.ToRef)
 	if err != nil {
 		return err

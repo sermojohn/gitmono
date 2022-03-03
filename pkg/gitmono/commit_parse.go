@@ -11,13 +11,13 @@ import (
 
 // CommitParse implements commit parsing
 type CommitParse struct {
-	scheme string
+	config *gitmono.Config
 }
 
 // NewCommitParse creates a new commit parser
 func NewCommitParse(monorepo *gitmono.MonoRepo) *CommitParse {
 	return &CommitParse{
-		scheme: monorepo.GetConfig().CommitScheme,
+		config: monorepo.GetConfig(),
 	}
 }
 
@@ -28,7 +28,7 @@ func (cp *CommitParse) GetBumperFromCommit(commit *git.Commit) gitmono.Bumper {
 	var b gitmono.Bumper
 	msg := commit.Message
 
-	switch cp.scheme {
+	switch cp.config.CommitScheme {
 	case "conventional":
 		b = conventionalCommitParse(msg)
 	case "common":

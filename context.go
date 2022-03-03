@@ -28,20 +28,19 @@ func OpenRepo(path string) (*MonoRepo, error) {
 		return nil, err
 	}
 
-	monorepo := MonoRepo{Repository: repo}
+	monorepo := MonoRepo{Repository: repo, config: &Config{}}
 
 	return &monorepo, nil
 }
 
 // SetConfig sets the configuration provided by the command-line
 func (mr *MonoRepo) SetConfig(config *Config) {
-	mr.config = config
+	*mr.config = *config
 }
 
 // GetConfig gets the configuration provided by the command-line
 func (mr *MonoRepo) GetConfig() *Config {
-	configCopy := *mr.config
-	return &configCopy
+	return mr.config
 }
 
 // Logger performs log commands on the repo
