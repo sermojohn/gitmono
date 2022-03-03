@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
     branches:
@@ -11,30 +12,54 @@ on:
         required: false
 
 jobs:
-  release:
-    if: github.event_name != 'pull_request'
+  validate:
+    name: run pre-commit
     runs-on: ubuntu-20.04
+    if: ${{ github.repository == 'sermojohn/gitmono' }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - uses: actions/setup-go@v2
+        with:
+          stable: true
+          go-version: '1.17'
+      - name: Install dependencies
+        run: |
+          go version
+          go install golang.org/x/lint/golint@latest
+          go install github.com/securego/gosec/v2/cmd/gosec@v2.7.0
+          go install github.com/sqs/goreturns@latest
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.0
+      - uses: pre-commit/action@v2.0.3
+
+  release:
+    if: ${{ github.repository == 'sermojohn/gitmono' && github.event_name == 'push' }}
+    needs: [validate]
+    runs-on: ubuntu-20.04
+    concurrency: release
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
-      - name: Check binary build
+      - name: Binary build
         run: |
           make build
           chmod +x ./gitmono/gitmono
-          git clean -fd
 
       - name: Release new version
         run: |
-          curl -Ls https://github.com/sermojohn/gitmono/releases/download/v0.3.0/gitmono_0.3.0_linux_amd64.tar.gz --output - | gunzip -c | tar xopf - -O gitmono>gitmono && chmod +x gitmono
-          ./gitmono release -p . --commit-scheme=conventional --version-prefix=v
+          GIT_COMMIT=${{ github.sha }}
+          git fetch origin --tags --unshallow
+          git checkout ${GIT_COMMIT}
+          ./gitmono/gitmono release -p . -c ${GIT_COMMIT} --commit-scheme=conventional --version-prefix=v
           git push --tags origin
           git clean -fd
 
       - name: Deploy release
         run: |
+          git clean -fd
           curl -sL https://git.io/goreleaser | bash -s -- --parallelism=2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
