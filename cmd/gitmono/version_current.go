@@ -4,9 +4,12 @@ import (
 	"github.com/sermojohn/gitmono"
 )
 
+type versionCurrentOptions struct {
+	PrintTag bool `long:"print-tag" description:"Print tag instead of version"`
+}
 type versionCurrentCommand struct {
 	mono    *gitmono.GitMono
-	options *Options
+	cmdOpts versionCurrentOptions
 }
 
 func (vcc *versionCurrentCommand) Execute(args []string) error {
@@ -17,7 +20,7 @@ func (vcc *versionCurrentCommand) Execute(args []string) error {
 	}
 
 	if currentVersion != nil {
-		if vcc.options.PrintTag {
+		if vcc.cmdOpts.PrintTag {
 			printTag(currentVersion)
 			return nil
 		}
@@ -25,4 +28,12 @@ func (vcc *versionCurrentCommand) Execute(args []string) error {
 	}
 
 	return nil
+}
+
+func (vcc *versionCurrentCommand) name() string {
+	return "version"
+}
+
+func (vcc *versionCurrentCommand) options() interface{} {
+	return &vcc.cmdOpts
 }
