@@ -49,9 +49,7 @@ func TestVersion_bumpVersion(t *testing.T) {
 		{
 			name: "one commit",
 			fields: fields{
-				config: &ctx.Config{
-					CommitScheme: "common",
-				},
+				config: &ctx.Config{},
 				logger: &mock.Logger{
 					LogOutput: []*git.Commit{
 						{Message: "test"},
@@ -77,9 +75,7 @@ func TestVersion_bumpVersion(t *testing.T) {
 		{
 			name: "multiple commits",
 			fields: fields{
-				config: &ctx.Config{
-					CommitScheme: "common",
-				},
+				config: &ctx.Config{},
 				logger: &mock.Logger{
 					LogOutput: []*git.Commit{
 						{Message: "patch"},
@@ -104,7 +100,40 @@ func TestVersion_bumpVersion(t *testing.T) {
 			},
 			want: &ctx.VersionedCommit{
 				CommitID: "2",
-				Version:  newVersion(t, "1.0.1"),
+				Version:  newVersion(t, "2.0.0"),
+			},
+			wantErr: false,
+		},
+		{
+			name: "higher commit bump wins",
+			fields: fields{
+				config: &ctx.Config{},
+				logger: &mock.Logger{
+					LogOutput: []*git.Commit{
+						{Message: "minor"},
+						{Message: "patch"},
+						{Message: "major"},
+						{Message: "minor"},
+					},
+				},
+				commitParser: &mock.CommitParser{
+					GetBumperFromCommitOutputMap: map[string]ctx.Bumper{
+						"patch": patchBumper,
+						"minor": minorBumper,
+						"major": majorBumper,
+					},
+				},
+			},
+			args: args{
+				currentVersion: &ctx.VersionedCommit{
+					CommitID: "1",
+					Version:  newVersion(t, "1.0.0"),
+				},
+				commitID: "2",
+			},
+			want: &ctx.VersionedCommit{
+				CommitID: "2",
+				Version:  newVersion(t, "2.0.0"),
 			},
 			wantErr: false,
 		},
