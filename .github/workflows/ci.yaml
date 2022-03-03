@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
     branches:
@@ -14,7 +15,7 @@ jobs:
   pre-commit:
     name: check pre-commit
     runs-on: ubuntu-20.04
-    if: ${{ github.repository == 'sermojohn/gitmono' && false }}
+    if: ${{ github.repository == 'sermojohn/gitmono' }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
@@ -34,33 +35,31 @@ jobs:
       - uses: pre-commit/action@v2.0.3
 
   release:
-    if: ${{ github.repository == 'sermojohn/gitmono' && github.event_name == 'pull_request' }}
-    # needs: [pre-commit]
+    if: ${{ github.repository == 'sermojohn/gitmono' && github.event_name == 'push' }}
+    needs: [pre-commit]
     runs-on: ubuntu-20.04
+    concurrency: release
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Check binary build
+      - name: Binary build
         run: |
           make build
           chmod +x ./gitmono/gitmono
-          git clean -fd
 
       - name: Release new version
         run: |
-          GITMONO_VERSION=0.6.4
-          # TODO replace commit with github.sha
-          GIT_COMMIT=${{ github.event.pull_request.head.sha }}
+          GIT_COMMIT=${{ github.sha }}
           git fetch origin --tags --unshallow
           git checkout ${GIT_COMMIT}
-          curl -Ls https://github.com/sermojohn/gitmono/releases/download/v${GITMONO_VERSION}/gitmono_${GITMONO_VERSION}_linux_amd64.tar.gz --output - | gunzip -c | tar xopf - -O gitmono>gitmono && chmod +x gitmono
-          ./gitmono release -p . -c ${GIT_COMMIT} --commit-scheme=conventional --version-prefix=v
+          ./gitmono/gitmono release -p . -c ${GIT_COMMIT} --commit-scheme=conventional --version-prefix=v
           git push --tags origin
           git clean -fd
 
       - name: Deploy release
         run: |
+          git clean -fd
           curl -sL https://git.io/goreleaser | bash -s -- --parallelism=2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
