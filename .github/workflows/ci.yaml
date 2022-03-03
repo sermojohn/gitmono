@@ -12,8 +12,8 @@ on:
         required: false
 
 jobs:
-  lint-and-test:
-    name: check pre-commit
+  validate:
+    name: run pre-commit
     runs-on: ubuntu-20.04
     if: ${{ github.repository == 'sermojohn/gitmono' }}
     steps:
@@ -36,7 +36,7 @@ jobs:
 
   release:
     if: ${{ github.repository == 'sermojohn/gitmono' && github.event_name == 'push' }}
-    needs: [pre-commit]
+    needs: [validate]
     runs-on: ubuntu-20.04
     concurrency: release
     steps:
