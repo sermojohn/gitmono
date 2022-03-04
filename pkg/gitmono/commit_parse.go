@@ -1,7 +1,6 @@
 package gitmono
 
 import (
-	"log"
 	"regexp"
 	"strings"
 
@@ -32,7 +31,7 @@ func (cp *CommitParse) GetBumperFromCommit(commit *git.Commit) gitmono.Bumper {
 	case "conventional":
 		b = conventionalCommitParse(msg)
 	case "common":
-		b = defaultCommitParse(msg)
+		b = commonCommitParse(msg)
 	}
 
 	return b
@@ -47,19 +46,16 @@ func conventionalCommitParse(msg string) gitmono.Bumper {
 
 	// If the commit contains a footer with 'BREAKING CHANGE:' it is always a major bump
 	if strings.Contains(msg, "\nBREAKING CHANGE:") {
-		log.Println("major bump")
 		return majorBumper
 	}
 
 	// if the type/scope in the header includes a trailing '!' this is a breaking change
 	if breaking, ok := matches["breaking"]; ok && breaking == "!" {
-		log.Println("major bump")
 		return majorBumper
 	}
 
 	// if the type in the header is 'feat' it is a minor change
 	if typ, ok := matches["type"]; ok && typ == "feat" {
-		log.Println("minor bump")
 		return minorBumper
 	}
 
@@ -97,19 +93,16 @@ var (
 //  - [minor] or #minor: minor version bump
 //  - [patch] or #patch: patch version bump
 // If no action is present nil is returned and the caller must decide what action to take.
-func defaultCommitParse(msg string) gitmono.Bumper {
+func commonCommitParse(msg string) gitmono.Bumper {
 	if majorRex.MatchString(msg) {
-		log.Println("major bump")
 		return majorBumper
 	}
 
 	if minorRex.MatchString(msg) {
-		log.Println("minor bump")
 		return minorBumper
 	}
 
 	if patchRex.MatchString(msg) {
-		log.Println("patch bump")
 		return patchBumper
 	}
 
