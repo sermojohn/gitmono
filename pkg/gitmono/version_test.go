@@ -44,7 +44,7 @@ func TestVersion_bumpVersion(t *testing.T) {
 				},
 			},
 			want:    nil,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "one commit",
