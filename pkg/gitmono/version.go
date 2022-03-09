@@ -1,11 +1,17 @@
 package gitmono
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/hashicorp/go-version"
 	ctx "github.com/sermojohn/gitmono"
+)
+
+var (
+	// ErrNoCommitsRelease signals that no commit exist so failing the release
+	ErrNoCommitsRelease = fmt.Errorf("no commits to release")
 )
 
 // Version combines git commands to read and write releases
@@ -158,7 +164,7 @@ func (v *Version) bumpVersion(currentVersion *ctx.VersionedCommit, commitID stri
 		return nil, err
 	}
 	if len(newCommits) == 0 {
-		return nil, nil
+		return nil, ErrNoCommitsRelease
 	}
 
 	var bump ctx.Bumper
