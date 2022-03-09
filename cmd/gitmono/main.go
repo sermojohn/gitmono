@@ -41,7 +41,7 @@ func (opts *Options) Config() *ctx.Config {
 
 func main() {
 	monorepo, err := ctx.OpenRepo("./")
-	checkError(err, true)
+	checkError(err)
 
 	ctx := newContext(monorepo)
 	var (
@@ -63,10 +63,10 @@ func main() {
 	}
 	for _, command := range commands {
 		cmd, err := flagsParser.AddCommand(command.name(), "", "", command)
-		checkError(err, true)
+		checkError(err)
 
 		_, err = cmd.AddGroup(command.name(), "", command.options())
-		checkError(err, true)
+		checkError(err)
 	}
 
 	log.SetOutput(ioutil.Discard)
@@ -76,7 +76,7 @@ func main() {
 
 	// parse options and trigger command
 	_, err = flagsParser.Parse()
-	checkError(err, true)
+	checkError(err)
 }
 
 func printCommits(commits []*git.Commit) {
@@ -93,11 +93,9 @@ func printTag(version *ctx.VersionedCommit) {
 	fmt.Printf("%s\n", version.GetTag())
 }
 
-func checkError(err error, verbose bool) {
+func checkError(err error) {
 	if err != nil {
-		if verbose {
-			fmt.Println(err)
-		}
+		fmt.Fprint(os.Stderr)
 		os.Exit(1)
 	}
 }
