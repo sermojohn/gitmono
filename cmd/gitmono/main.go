@@ -93,6 +93,10 @@ func printTag(version *ctx.VersionedCommit) {
 	fmt.Printf("%s\n", version.GetTag())
 }
 
+func printCommit(version *ctx.VersionedCommit) {
+	fmt.Printf("%s\n", version.CommitID)
+}
+
 func checkError(err error) {
 	if err != nil {
 		fmt.Fprint(os.Stderr)

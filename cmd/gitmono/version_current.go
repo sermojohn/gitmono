@@ -5,7 +5,8 @@ import (
 )
 
 type versionOptions struct {
-	PrintTag bool `long:"print-tag" description:"Print tag instead of version"`
+	PrintTag    bool `long:"print-tag" description:"Print the tag of the current version"`
+	PrintCommit bool `long:"print-commit" description:"Print the commit of the current version"`
 }
 type versionCommand struct {
 	versioner gitmono.Versioner
@@ -27,6 +28,10 @@ func (vc *versionCommand) Execute(args []string) error {
 	if currentVersion != nil {
 		if vc.cmdOpts.PrintTag {
 			printTag(currentVersion)
+			return nil
+		}
+		if vc.cmdOpts.PrintCommit {
+			printCommit(currentVersion)
 			return nil
 		}
 		printVersion(currentVersion)
