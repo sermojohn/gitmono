@@ -32,7 +32,9 @@ func (t *Tag) ListProjectTags() ([]string, error) {
 	})
 }
 
-// CreateTag create a tag on the provided commit
+// CreateTag create an annotated tag on the provided commit
 func (t *Tag) CreateTag(versionedCommit *gitmono.VersionedCommit) error {
-	return t.monorepo.CreateTag(versionedCommit.GetTag(), versionedCommit.CommitID)
+	return t.monorepo.CreateTag(versionedCommit.GetTag(), versionedCommit.CommitID, git.CreateTagOptions{
+		Annotated: true,
+	})
 }
