@@ -13,8 +13,8 @@ import (
 	goversion "github.com/mcuadros/go-version"
 )
 
-// parseTag parses tag information from the (uncompressed) raw data of the tag object.
-// It assumes "\n\n" separates the header from the rest of the message.
+// parseTag parses tag information from the (uncompressed) raw data of the tag
+// object. It assumes "\n\n" separates the header from the rest of the message.
 func parseTag(data []byte) (*Tag, error) {
 	tag := new(Tag)
 	// we now have the contents of the commit object. Let's investigate.
@@ -99,10 +99,11 @@ func (r *Repository) getTag(timeout time.Duration, id *SHA1) (*Tag, error) {
 }
 
 // TagOptions contains optional arguments for getting a tag.
+//
 // Docs: https://git-scm.com/docs/git-cat-file
 type TagOptions struct {
-	// The timeout duration before giving up for each shell command execution.
-	// The default timeout duration will be used when not supplied.
+	// The timeout duration before giving up for each shell command execution. The
+	// default timeout duration will be used when not supplied.
 	Timeout time.Duration
 }
 
@@ -139,10 +140,15 @@ func (r *Repository) Tag(name string, opts ...TagOptions) (*Tag, error) {
 }
 
 // TagsOptions contains optional arguments for listing tags.
+//
 // Docs: https://git-scm.com/docs/git-tag#Documentation/git-tag.txt---list
 type TagsOptions struct {
-	// The timeout duration before giving up for each shell command execution.
-	// The default timeout duration will be used when not supplied.
+	// SortKet sorts tags with provided tag key, optionally prefixed with '-' to sort tags in descending order.
+	SortKey string
+	// Pattern filters tags matching the specified pattern.
+	Pattern string
+	// The timeout duration before giving up for each shell command execution. The
+	// default timeout duration will be used when not supplied.
 	Timeout time.Duration
 }
 
@@ -159,8 +165,18 @@ func RepoTags(repoPath string, opts ...TagsOptions) ([]string, error) {
 	}
 
 	cmd := NewCommand("tag", "--list")
-	if goversion.Compare(version, "2.4.9", ">=") {
+
+	var sorted bool
+	if opt.SortKey != "" {
+		cmd.AddArgs("--sort=" + opt.SortKey)
+		sorted = true
+	} else if goversion.Compare(version, "2.4.9", ">=") {
 		cmd.AddArgs("--sort=-creatordate")
+		sorted = true
+	}
+
+	if opt.Pattern != "" {
+		cmd.AddArgs(opt.Pattern)
 	}
 
 	stdout, err := cmd.RunInDirWithTimeout(opt.Timeout, repoPath)
@@ -171,7 +187,7 @@ func RepoTags(repoPath string, opts ...TagsOptions) ([]string, error) {
 	tags := strings.Split(string(stdout), "\n")
 	tags = tags[:len(tags)-1]
 
-	if goversion.Compare(version, "2.4.9", "<") {
+	if !sorted {
 		goversion.Sort(tags)
 
 		// Reverse order
@@ -190,10 +206,17 @@ func (r *Repository) Tags(opts ...TagsOptions) ([]string, error) {
 }
 
 // CreateTagOptions contains optional arguments for creating a tag.
+//
 // Docs: https://git-scm.com/docs/git-tag
 type CreateTagOptions struct {
-	// The timeout duration before giving up for each shell command execution.
-	// The default timeout duration will be used when not supplied.
+	// Annotated marks a tag as annotated rather than lightweight.
+	Annotated bool
+	// Message specifies a tagging message for the annotated tag. It is ignored when tag is not annotated.
+	Message string
+	// Author is the author of the tag. It is ignored when tag is not annotated.
+	Author *Signature
+	// The timeout duration before giving up for each shell command execution. The
+	// default timeout duration will be used when not supplied.
 	Timeout time.Duration
 }
 
@@ -204,11 +227,25 @@ func (r *Repository) CreateTag(name, rev string, opts ...CreateTagOptions) error
 		opt = opts[0]
 	}
 
-	_, err := NewCommand("tag", name, rev).RunInDirWithTimeout(opt.Timeout, r.path)
+	cmd := NewCommand("tag")
+	if opt.Annotated {
+		cmd.AddArgs("-a", name)
+		cmd.AddArgs("--message", opt.Message)
+		if opt.Author != nil {
+			cmd.AddCommitter(opt.Author)
+		}
+	} else {
+		cmd.AddArgs(name)
+	}
+
+	cmd.AddArgs(rev)
+
+	_, err := cmd.RunInDirWithTimeout(opt.Timeout, r.path)
 	return err
 }
 
 // DeleteTagOptions contains optional arguments for deleting a tag.
+//
 // Docs: https://git-scm.com/docs/git-tag#Documentation/git-tag.txt---delete
 type DeleteTagOptions struct {
 	// The timeout duration before giving up for each shell command execution.
