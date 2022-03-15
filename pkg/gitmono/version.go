@@ -23,9 +23,9 @@ type Version struct {
 }
 
 // NewVersion creates a new version instance
-func NewVersion(monorepo *ctx.MonoRepo, logger ctx.Logger, tagger ctx.Tagger, commitParser ctx.CommitParser) *Version {
+func NewVersion(config *ctx.Config, logger ctx.Logger, tagger ctx.Tagger, commitParser ctx.CommitParser) *Version {
 	return &Version{
-		config:       monorepo.GetConfig(),
+		config:       config,
 		logger:       logger,
 		tagger:       tagger,
 		commitParser: commitParser,

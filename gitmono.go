@@ -7,10 +7,15 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-// MonoRepo contains repository instance and command parameters
-type MonoRepo struct {
+// GitRepository contains repository instance and command parameters
+type GitRepository struct {
 	*git.Repository
-	config *Config
+}
+
+// EnvVars contains the accepted environment variables
+type EnvVars struct {
+	CommitterName  string
+	CommitterEmail string
 }
 
 // Config defines generic configuration applying to multiple commands
@@ -22,25 +27,17 @@ type Config struct {
 }
 
 // OpenRepo open a git repository and returns the monorepo wrapper
-func OpenRepo(path string) (*MonoRepo, error) {
+func OpenRepo(path string) (*GitRepository, error) {
 	repo, err := git.Open("./")
 	if err != nil {
 		return nil, err
 	}
 
-	monorepo := MonoRepo{Repository: repo, config: &Config{}}
+	monorepo := GitRepository{
+		Repository: repo,
+	}
 
 	return &monorepo, nil
-}
-
-// SetConfig sets the configuration provided by the command-line
-func (mr *MonoRepo) SetConfig(config *Config) {
-	*mr.config = *config
-}
-
-// GetConfig gets the configuration provided by the command-line
-func (mr *MonoRepo) GetConfig() *Config {
-	return mr.config
 }
 
 // Logger performs log commands on the repo

@@ -14,9 +14,9 @@ type CommitParse struct {
 }
 
 // NewCommitParse creates a new commit parser
-func NewCommitParse(monorepo *gitmono.MonoRepo) *CommitParse {
+func NewCommitParse(config *gitmono.Config) *CommitParse {
 	return &CommitParse{
-		config: monorepo.GetConfig(),
+		config: config,
 	}
 }
 

@@ -9,26 +9,30 @@ import (
 
 // Log performs log operation for the specifed monorepo project
 type Log struct {
-	monorepo *gitmono.MonoRepo
+	repo   *gitmono.GitRepository
+	config *gitmono.Config
 }
 
 // NewLog creates a new logger instance
-func NewLog(monorepo *gitmono.MonoRepo) *Log {
-	return &Log{monorepo: monorepo}
+func NewLog(repo *gitmono.GitRepository, config *gitmono.Config) *Log {
+	return &Log{
+		repo:   repo,
+		config: config,
+	}
 }
 
 // Log performs log operation for the provided git references range and monorepo project
 func (l *Log) Log(from, to string) ([]*git.Commit, error) {
 	logOption := git.LogOptions{
-		Path: l.monorepo.GetConfig().Project,
+		Path: l.config.Project,
 	}
 
-	return l.monorepo.Log(fmt.Sprintf("%s..%s", from, to), logOption)
+	return l.repo.Log(fmt.Sprintf("%s..%s", from, to), logOption)
 }
 
 // CommitHashByRevision lookup the commit hash for a revision/reference.
 func (l *Log) CommitHashByRevision(rev string) (string, error) {
-	commit, err := l.monorepo.CommitByRevision(rev)
+	commit, err := l.repo.CommitByRevision(rev)
 	if err != nil {
 		return "", err
 	}

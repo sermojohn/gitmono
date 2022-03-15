@@ -9,32 +9,46 @@ import (
 
 // Tag performs tag operation for a monorepo
 type Tag struct {
-	monorepo *gitmono.MonoRepo
+	repo    *gitmono.GitRepository
+	config  *gitmono.Config
+	envVars *gitmono.EnvVars
 }
 
 // NewTag creates a new tagger instance
-func NewTag(monorepo *gitmono.MonoRepo) *Tag {
+func NewTag(repo *gitmono.GitRepository, config *gitmono.Config, envVars *gitmono.EnvVars) *Tag {
 	return &Tag{
-		monorepo: monorepo,
+		repo:    repo,
+		config:  config,
+		envVars: envVars,
 	}
 }
 
 // Tags retrieves all repository tags ordered by descending creation date
 func (t *Tag) Tags() ([]string, error) {
-	return t.monorepo.Tags()
+	return t.repo.Tags()
 }
 
 // ListProjectTags retrieves all project tags ordered by descending version value
 func (t *Tag) ListProjectTags() ([]string, error) {
-	return t.monorepo.Tags(git.TagsOptions{
+	return t.repo.Tags(git.TagsOptions{
 		SortKey: "-version:refname",
-		Pattern: fmt.Sprintf("%s/v*", t.monorepo.GetConfig().Project),
+		Pattern: fmt.Sprintf("%s/v*", t.config.Project),
 	})
 }
 
 // CreateTag create an annotated tag on the provided commit
 func (t *Tag) CreateTag(versionedCommit *gitmono.VersionedCommit) error {
-	return t.monorepo.CreateTag(versionedCommit.GetTag(), versionedCommit.CommitID, git.CreateTagOptions{
+	var committer *git.Signature
+
+	if t.envVars.CommitterName != "" && t.envVars.CommitterEmail != "" {
+		committer = &git.Signature{
+			Name:  t.envVars.CommitterName,
+			Email: t.envVars.CommitterEmail,
+		}
+	}
+
+	return t.repo.CreateTag(versionedCommit.GetTag(), versionedCommit.CommitID, git.CreateTagOptions{
 		Annotated: true,
+		Author:    committer,
 	})
 }

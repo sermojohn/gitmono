@@ -53,12 +53,12 @@ func main() {
 			newReleaseCommand(ctx.versioner),
 			newVersionCommand(ctx.versioner),
 		}
-		flagsParser = flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag)
+		flagsParser = flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag|flags.PrintErrors)
 	)
 
 	// inject options to global component
 	flagsParser.CommandHandler = func(command flags.Commander, args []string) error {
-		monorepo.SetConfig(opts.Config())
+		ctx.config = opts.Config()
 		return command.Execute(args)
 	}
 	for _, command := range commands {
@@ -109,18 +109,34 @@ type context struct {
 	tagger    ctx.Tagger
 	differ    ctx.Differ
 	logger    ctx.Logger
+
+	config  *ctx.Config
+	envVars *ctx.EnvVars
 }
 
-func newContext(monorepo *ctx.MonoRepo) *context {
-	log := gitmono.NewLog(monorepo)
-	tag := gitmono.NewTag(monorepo)
-	diff := gitmono.NewDiff(monorepo)
-	commitParse := gitmono.NewCommitParse(monorepo)
-	version := gitmono.NewVersion(monorepo, log, tag, commitParse)
-	return &context{
-		versioner: version,
-		tagger:    tag,
-		differ:    diff,
-		logger:    log,
+func newContext(repo *ctx.GitRepository) *context {
+	ctx := context{
+		config:  &ctx.Config{},
+		envVars: loadEnvVars(os.LookupEnv),
 	}
+	ctx.logger = gitmono.NewLog(repo, ctx.config)
+	ctx.tagger = gitmono.NewTag(repo, ctx.config, ctx.envVars)
+	ctx.differ = gitmono.NewDiff(repo, ctx.config)
+	commitParse := gitmono.NewCommitParse(ctx.config)
+	ctx.versioner = gitmono.NewVersion(ctx.config, ctx.logger, ctx.tagger, commitParse)
+
+	return &ctx
+}
+
+func loadEnvVars(loaderFunc func(string) (string, bool)) *ctx.EnvVars {
+	envVars := ctx.EnvVars{}
+	if value, found := loaderFunc("GIT_COMMITTER_NAME"); found {
+		envVars.CommitterName = value
+	}
+
+	if value, found := loaderFunc("GIT_COMMITTER_EMAIL"); found {
+		envVars.CommitterEmail = value
+	}
+
+	return &envVars
 }
