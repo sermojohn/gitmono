@@ -109,3 +109,9 @@ func (vc *VersionedCommit) GetTag() string {
 func (vc *VersionedCommit) GetVersion() string {
 	return fmt.Sprintf("%s%s", vc.VersionPrefix, vc.Version.String())
 }
+
+// GitTagger abstracts git-module tag operations
+type GitTagger interface {
+	Tags(opts ...git.TagsOptions) ([]string, error)
+	CreateTag(name, rev string, opts ...git.CreateTagOptions) error
+}
