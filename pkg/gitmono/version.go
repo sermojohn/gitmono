@@ -40,6 +40,7 @@ func (v *Version) GetCurrentVersion() (*ctx.VersionedCommit, error) {
 	}
 
 	if len(tags) == 0 {
+		log.Printf("no tags found\n")
 		return nil, nil
 	}
 
@@ -148,7 +149,7 @@ func (v *Version) InitVersion(commitID string) (*ctx.VersionedCommit, error) {
 }
 
 func (v *Version) createReleaseTag(vc *ctx.VersionedCommit) error {
-	log.Printf("about to create tag: %s to commit: %s\n", vc.GetTag(), vc.CommitID)
+	log.Printf("new tag: %s at: %s\n", vc.GetTag(), vc.CommitID)
 	if v.config.DryRun {
 		return nil
 	}
