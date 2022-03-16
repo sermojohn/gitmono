@@ -50,12 +50,15 @@ jobs:
 
       - name: Release new version
         run: |
-          GIT_COMMIT=${{ github.sha }}
           git fetch origin --tags --unshallow
-          git checkout ${GIT_COMMIT}
-          ./gitmono/gitmono release -p . -c ${GIT_COMMIT} --commit-scheme=conventional --version-prefix=v
+          git checkout ${GIT_COMMIT_HASH}
+          ./gitmono/gitmono release -p . -c ${GIT_COMMIT_HASH} --commit-scheme=conventional --version-prefix=v
           git push --tags origin
           git clean -fd
+        env:
+          GIT_COMMIT_HASH: ${{ github.sha }}
+          GIT_COMMITTER_NAME: ci
+          GIT_COMMITTER_EMAIL: ci@gitmono.org
 
       - name: Deploy release
         run: |
