@@ -94,7 +94,7 @@ func TestTag_CreateTag(t *testing.T) {
 	}
 }
 
-func TestTag_ListProjectTags(t *testing.T) {
+func TestTag_ListProjectVersionTags(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
@@ -131,13 +131,13 @@ func TestTag_ListProjectTags(t *testing.T) {
 				tagger: tt.fields.tagger,
 				config: tt.fields.config,
 			}
-			got, err := tr.ListProjectTags()
+			got, err := tr.ListProjectVersionTags()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Tag.ListProjectTags() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Tag.ListProjectVersionTags() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Tag.ListProjectTags() = %v, want %v", got, tt.want)
+				t.Errorf("Tag.ListProjectVersionTags() = %v, want %v", got, tt.want)
 			}
 			if tt.assertFunc != nil {
 				tt.assertFunc(t, &tt.fields)

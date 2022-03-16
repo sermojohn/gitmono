@@ -34,7 +34,7 @@ func NewVersion(config *ctx.Config, logger ctx.Logger, tagger ctx.Tagger, commit
 
 // GetCurrentVersion retrieves the current version
 func (v *Version) GetCurrentVersion() (*ctx.VersionedCommit, error) {
-	tags, err := v.tagger.ListProjectTags()
+	tags, err := v.tagger.ListProjectVersionTags()
 	if err != nil {
 		return nil, err
 	}

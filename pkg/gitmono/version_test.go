@@ -181,7 +181,7 @@ func TestVersion_GetCurrentVersion(t *testing.T) {
 			name: "current version using tag default ordering",
 			fields: fields{
 				config: &ctx.Config{Project: "test2", VersionPrefix: "v"},
-				tagger: &mock.Tagger{ListProjectTagsOutput: []string{"test2/v1.0.0", "test2/v0.1.0"}},
+				tagger: &mock.Tagger{ListProjectVersionTagsOutput: []string{"test2/v1.0.0", "test2/v0.1.0"}},
 				logger: &mock.Logger{},
 			},
 			want: &ctx.VersionedCommit{Project: "test2", VersionPrefix: "v", Version: newVersion(t, "1.0.0")},

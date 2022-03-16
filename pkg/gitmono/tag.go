@@ -23,13 +23,8 @@ func NewTag(repo *gitmono.GitRepository, config *gitmono.Config, envVars *gitmon
 	}
 }
 
-// Tags retrieves all repository tags ordered by descending creation date
-func (t *Tag) Tags() ([]string, error) {
-	return t.tagger.Tags()
-}
-
-// ListProjectTags retrieves all project tags ordered by descending version value
-func (t *Tag) ListProjectTags() ([]string, error) {
+// ListProjectVersionTags retrieves all project tags ordered by descending version value
+func (t *Tag) ListProjectVersionTags() ([]string, error) {
 	return t.tagger.Tags(git.TagsOptions{
 		SortKey: "-version:refname",
 		Pattern: fmt.Sprintf("%s/v*", t.config.Project),

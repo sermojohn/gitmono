@@ -51,13 +51,11 @@ type Logger interface {
 
 // Tagger performs tag commands on the repo
 //
-// ListProjectTags retrieves all tags for a project using the tag list pattern
-// Tags returns all tags from the repo
 // CreateTag writes the given tag to the given commit
+// ListProjectVersionTags retrieves all tags for a project using the tag list pattern
 type Tagger interface {
-	ListProjectTags() ([]string, error)
-	Tags() ([]string, error)
 	CreateTag(versionedCommit *VersionedCommit) error
+	ListProjectVersionTags() ([]string, error)
 }
 
 // Versioner maintains version using tags
