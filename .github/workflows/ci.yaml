@@ -35,7 +35,8 @@ jobs:
       - uses: pre-commit/action@v2.0.3
 
   release:
-    if: ${{ github.repository == 'sermojohn/gitmono' && github.event_name == 'push' }}
+    # TODO revert this change
+    if: ${{ github.repository == 'sermojohn/gitmono' && github.event_name != 'push' }}
     needs: [validate]
     runs-on: ubuntu-20.04
     concurrency: release
@@ -64,5 +65,12 @@ jobs:
         run: |
           git clean -fd
           curl -sL https://git.io/goreleaser | bash -s -- --parallelism=2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: dev-drprasad/delete-older-releases@v0.2.0
+        if:  ${{ failure() }}
+        with:
+          keep_latest: 5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
