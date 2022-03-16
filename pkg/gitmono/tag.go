@@ -27,7 +27,7 @@ func NewTag(tagger gitmono.GitTagger, config *gitmono.Config, envVars *gitmono.E
 func (t *Tag) ListProjectVersionTags() ([]string, error) {
 	return t.tagger.Tags(git.TagsOptions{
 		SortKey: "-version:refname",
-		Pattern: fmt.Sprintf("%s/v*", t.config.Project),
+		Pattern: fmt.Sprintf("%s%s*", gitmono.GetProjectTagPrefix(t.config.Project), t.config.VersionPrefix),
 	})
 }
 

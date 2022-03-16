@@ -75,13 +75,18 @@ type VersionedCommit struct {
 	Version       *version.Version
 }
 
+// GetProjectTagPrefix calculates the project tag prefix for the specified project value
+func GetProjectTagPrefix(project string) string {
+	if project == "." {
+		return ""
+	}
+
+	return fmt.Sprintf("%s/", project)
+}
+
 // GetTag returns the tag to version a commit with
 func (vc *VersionedCommit) GetTag() string {
-	var projectPrefix string
-	if vc.Project != "." {
-		projectPrefix = fmt.Sprintf("%s/", vc.Project)
-	}
-	return fmt.Sprintf("%s%s", projectPrefix, vc.GetVersion())
+	return fmt.Sprintf("%s%s", GetProjectTagPrefix(vc.Project), vc.GetVersion())
 }
 
 // GetVersion returns the version part of the tag
