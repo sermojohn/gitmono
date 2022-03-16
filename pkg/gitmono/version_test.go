@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/go-version"
 	ctx "github.com/sermojohn/gitmono"
 	"github.com/sermojohn/gitmono/internal/mock"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -162,4 +161,47 @@ func newVersion(t *testing.T, v string) *version.Version {
 	semVer, err := version.NewSemver(v)
 	assert.Nil(t, err)
 	return semVer
+}
+
+func TestVersion_GetCurrentVersion(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		config *ctx.Config
+		logger ctx.Logger
+		tagger ctx.Tagger
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    *ctx.VersionedCommit
+		wantErr bool
+	}{
+		{
+			name: "current version using tag default ordering",
+			fields: fields{
+				config: &ctx.Config{Project: "test2", VersionPrefix: "v"},
+				tagger: &mock.Tagger{ListProjectVersionTagsOutput: []string{"test2/v1.0.0", "test2/v0.1.0"}},
+				logger: &mock.Logger{},
+			},
+			want: &ctx.VersionedCommit{Project: "test2", VersionPrefix: "v", Version: newVersion(t, "1.0.0")},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Version{
+				config: tt.fields.config,
+				logger: tt.fields.logger,
+				tagger: tt.fields.tagger,
+			}
+			got, err := v.GetCurrentVersion()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Version.GetCurrentVersion() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.Version, tt.want.Version) {
+				t.Errorf("Version.GetCurrentVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

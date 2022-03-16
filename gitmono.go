@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-// MonoRepo contains repository instance and command parameters
-type MonoRepo struct {
-	*git.Repository
-	config *Config
+// EnvVars contains the accepted environment variables
+type EnvVars struct {
+	CommitterName  string
+	CommitterEmail string
 }
 
 // Config defines generic configuration applying to multiple commands
@@ -19,28 +19,6 @@ type Config struct {
 	CommitScheme  string
 	VersionPrefix string
 	Project       string
-}
-
-// OpenRepo open a git repository and returns the monorepo wrapper
-func OpenRepo(path string) (*MonoRepo, error) {
-	repo, err := git.Open("./")
-	if err != nil {
-		return nil, err
-	}
-
-	monorepo := MonoRepo{Repository: repo, config: &Config{}}
-
-	return &monorepo, nil
-}
-
-// SetConfig sets the configuration provided by the command-line
-func (mr *MonoRepo) SetConfig(config *Config) {
-	*mr.config = *config
-}
-
-// GetConfig gets the configuration provided by the command-line
-func (mr *MonoRepo) GetConfig() *Config {
-	return mr.config
 }
 
 // Logger performs log commands on the repo
@@ -54,11 +32,11 @@ type Logger interface {
 
 // Tagger performs tag commands on the repo
 //
-// Tags returns all tags from the repo
 // CreateTag writes the given tag to the given commit
+// ListProjectVersionTags retrieves all tags for a project using the tag list pattern
 type Tagger interface {
-	Tags() ([]string, error)
 	CreateTag(versionedCommit *VersionedCommit) error
+	ListProjectVersionTags() ([]string, error)
 }
 
 // Versioner maintains version using tags
@@ -109,4 +87,21 @@ func (vc *VersionedCommit) GetTag() string {
 // GetVersion returns the version part of the tag
 func (vc *VersionedCommit) GetVersion() string {
 	return fmt.Sprintf("%s%s", vc.VersionPrefix, vc.Version.String())
+}
+
+// GitTagger abstracts git tag operations
+type GitTagger interface {
+	Tags(opts ...git.TagsOptions) ([]string, error)
+	CreateTag(name, rev string, opts ...git.CreateTagOptions) error
+}
+
+// GitLogger abstracts git log operations
+type GitLogger interface {
+	Log(rev string, opts ...git.LogOptions) ([]*git.Commit, error)
+	CommitByRevision(rev string, opts ...git.CommitByRevisionOptions) (*git.Commit, error)
+}
+
+// GitDiffer abstracts git diff operations
+type GitDiffer interface {
+	Diff(rev string, maxFiles, maxFileLines, maxLineChars int, opts ...git.DiffOptions) (*git.Diff, error)
 }

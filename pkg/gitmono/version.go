@@ -23,9 +23,9 @@ type Version struct {
 }
 
 // NewVersion creates a new version instance
-func NewVersion(monorepo *ctx.MonoRepo, logger ctx.Logger, tagger ctx.Tagger, commitParser ctx.CommitParser) *Version {
+func NewVersion(config *ctx.Config, logger ctx.Logger, tagger ctx.Tagger, commitParser ctx.CommitParser) *Version {
 	return &Version{
-		config:       monorepo.GetConfig(),
+		config:       config,
 		logger:       logger,
 		tagger:       tagger,
 		commitParser: commitParser,
@@ -34,48 +34,46 @@ func NewVersion(monorepo *ctx.MonoRepo, logger ctx.Logger, tagger ctx.Tagger, co
 
 // GetCurrentVersion retrieves the current version
 func (v *Version) GetCurrentVersion() (*ctx.VersionedCommit, error) {
-	tags, err := v.tagger.Tags()
+	tags, err := v.tagger.ListProjectVersionTags()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, tag := range tags {
-		parsedProject, version := v.parseProjectVersion(tag)
-		if !strings.EqualFold(parsedProject, v.config.Project) {
-			continue
-		}
-
-		commitHash, err := v.logger.CommitHashByRevision(tag)
-		if err != nil {
-			return nil, err
-		}
-
-		parsedVersion, err := v.parseVersion(version)
-		if err != nil {
-			return nil, err
-		}
-
-		currentVersion := ctx.VersionedCommit{
-			Version:       parsedVersion,
-			VersionPrefix: v.config.VersionPrefix,
-			Project:       parsedProject,
-			CommitID:      commitHash,
-		}
-
-		log.Printf("current version: %v\n", currentVersion)
-		return &currentVersion, nil
+	if len(tags) == 0 {
+		return nil, nil
 	}
 
-	return nil, nil
+	latestTag := tags[0]
+	parsedVersion := v.parseProjectVersion(latestTag)
+
+	commitHash, err := v.logger.CommitHashByRevision(latestTag)
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := v.parseVersion(parsedVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	currentVersion := ctx.VersionedCommit{
+		Version:       version,
+		Project:       v.config.Project,
+		VersionPrefix: v.config.VersionPrefix,
+		CommitID:      commitHash,
+	}
+
+	log.Printf("current version: '%s'\n", currentVersion.Version)
+	return &currentVersion, nil
 }
 
-func (v *Version) parseProjectVersion(tag string) (string, string) {
+func (v *Version) parseProjectVersion(tag string) string {
 	idx := strings.LastIndex(tag, "/")
 	if idx == -1 {
-		return ".", tag
+		return tag
 	}
 
-	return tag[0:idx], tag[idx+1:]
+	return tag[idx+1:]
 }
 
 func (v *Version) parseVersion(vv string) (*version.Version, error) {
