@@ -7,11 +7,6 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-// GitRepository contains repository instance and command parameters
-type GitRepository struct {
-	*git.Repository
-}
-
 // EnvVars contains the accepted environment variables
 type EnvVars struct {
 	CommitterName  string
@@ -24,20 +19,6 @@ type Config struct {
 	CommitScheme  string
 	VersionPrefix string
 	Project       string
-}
-
-// OpenRepo open a git repository and returns the monorepo wrapper
-func OpenRepo(path string) (*GitRepository, error) {
-	repo, err := git.Open("./")
-	if err != nil {
-		return nil, err
-	}
-
-	monorepo := GitRepository{
-		Repository: repo,
-	}
-
-	return &monorepo, nil
 }
 
 // Logger performs log commands on the repo
@@ -108,8 +89,19 @@ func (vc *VersionedCommit) GetVersion() string {
 	return fmt.Sprintf("%s%s", vc.VersionPrefix, vc.Version.String())
 }
 
-// GitTagger abstracts git-module tag operations
+// GitTagger abstracts git tag operations
 type GitTagger interface {
 	Tags(opts ...git.TagsOptions) ([]string, error)
 	CreateTag(name, rev string, opts ...git.CreateTagOptions) error
+}
+
+// GitLogger abstracts git log operations
+type GitLogger interface {
+	Log(rev string, opts ...git.LogOptions) ([]*git.Commit, error)
+	CommitByRevision(rev string, opts ...git.CommitByRevisionOptions) (*git.Commit, error)
+}
+
+// GitDiffer abstracts git diff operations
+type GitDiffer interface {
+	Diff(rev string, maxFiles, maxFileLines, maxLineChars int, opts ...git.DiffOptions) (*git.Diff, error)
 }

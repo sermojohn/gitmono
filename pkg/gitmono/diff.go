@@ -9,14 +9,14 @@ import (
 
 // Diff performs diff operation for a monorepo.
 type Diff struct {
-	repo   *gitmono.GitRepository
+	differ gitmono.GitDiffer
 	config *gitmono.Config
 }
 
 // NewDiff creates a new differ instance.
-func NewDiff(repo *gitmono.GitRepository, config *gitmono.Config) *Diff {
+func NewDiff(differ gitmono.GitDiffer, config *gitmono.Config) *Diff {
 	diff := Diff{
-		repo:   repo,
+		differ: differ,
 		config: config,
 	}
 
@@ -26,7 +26,7 @@ func NewDiff(repo *gitmono.GitRepository, config *gitmono.Config) *Diff {
 // Diff performs diff for the provided git references range
 // Matches changed files to the provided monorepo project and return the list of files
 func (d *Diff) Diff(from, to string) ([]string, error) {
-	diffRes, err := d.repo.Diff(to, 0, 0, 0, git.DiffOptions{
+	diffRes, err := d.differ.Diff(to, 0, 0, 0, git.DiffOptions{
 		Base: from,
 	})
 	if err != nil {

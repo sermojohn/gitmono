@@ -40,20 +40,19 @@ func (opts *Options) Config() *ctx.Config {
 }
 
 func main() {
-	monorepo, err := ctx.OpenRepo("./")
+	ctx, err := newContext()
 	checkError(err)
 
-	ctx := newContext(monorepo)
 	var (
-		opts     Options
-		commands = []command{
+		opts        Options
+		flagsParser = flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag|flags.PrintErrors)
+		commands    = []command{
 			newDiffCommand(ctx.differ),
 			newLogCommand(ctx.logger),
 			newInitCommand(ctx.versioner),
 			newReleaseCommand(ctx.versioner),
 			newVersionCommand(ctx.versioner),
 		}
-		flagsParser = flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag|flags.PrintErrors)
 	)
 
 	// inject options to global component
@@ -105,27 +104,55 @@ func checkError(err error) {
 }
 
 type context struct {
+	// components
 	versioner ctx.Versioner
 	tagger    ctx.Tagger
 	differ    ctx.Differ
 	logger    ctx.Logger
-
+	// state
 	config  *ctx.Config
 	envVars *ctx.EnvVars
 }
 
-func newContext(repo *ctx.GitRepository) *context {
-	ctx := context{
-		config:  &ctx.Config{},
-		envVars: loadEnvVars(os.LookupEnv),
+func newContext() (*context, error) {
+	gitClient, err := newGitClient("./")
+	if err != nil {
+		return nil, err
 	}
-	ctx.logger = gitmono.NewLog(repo, ctx.config)
-	ctx.tagger = gitmono.NewTag(repo, ctx.config, ctx.envVars)
-	ctx.differ = gitmono.NewDiff(repo, ctx.config)
-	commitParse := gitmono.NewCommitParse(ctx.config)
-	ctx.versioner = gitmono.NewVersion(ctx.config, ctx.logger, ctx.tagger, commitParse)
 
-	return &ctx
+	config := &ctx.Config{}
+	envVars := loadEnvVars(os.LookupEnv)
+	logger := gitmono.NewLog(gitClient, config)
+	tagger := gitmono.NewTag(gitClient, config, envVars)
+	differ := gitmono.NewDiff(gitClient, config)
+	commitParse := gitmono.NewCommitParse(config)
+	versioner := gitmono.NewVersion(config, logger, tagger, commitParse)
+
+	return &context{
+		config:    config,
+		envVars:   envVars,
+		logger:    logger,
+		tagger:    tagger,
+		differ:    differ,
+		versioner: versioner,
+	}, nil
+}
+
+type gitClient struct {
+	*git.Repository
+}
+
+func newGitClient(path string) (*gitClient, error) {
+	repo, err := git.Open("./")
+	if err != nil {
+		return nil, err
+	}
+
+	cl := gitClient{
+		Repository: repo,
+	}
+
+	return &cl, nil
 }
 
 func loadEnvVars(loaderFunc func(string) (string, bool)) *ctx.EnvVars {

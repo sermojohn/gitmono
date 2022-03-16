@@ -15,9 +15,9 @@ type Tag struct {
 }
 
 // NewTag creates a new tagger instance
-func NewTag(repo *gitmono.GitRepository, config *gitmono.Config, envVars *gitmono.EnvVars) *Tag {
+func NewTag(tagger gitmono.GitTagger, config *gitmono.Config, envVars *gitmono.EnvVars) *Tag {
 	return &Tag{
-		tagger:  repo,
+		tagger:  tagger,
 		config:  config,
 		envVars: envVars,
 	}
