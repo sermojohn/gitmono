@@ -57,7 +57,7 @@ func main() {
 
 	// inject options to global component
 	flagsParser.CommandHandler = func(command flags.Commander, args []string) error {
-		ctx.config = opts.Config()
+		*ctx.config = *opts.Config()
 		return command.Execute(args)
 	}
 	for _, command := range commands {

@@ -114,7 +114,7 @@ func TestTag_ListProjectVersionTags(t *testing.T) {
 				tagger: &mock.GitTagger{
 					TagsOutput: []string{"project1/tag1", "project1/tag2"},
 				},
-				config: &gitmono.Config{Project: "project1"},
+				config: &gitmono.Config{Project: "project1", VersionPrefix: "v"},
 			},
 			want: []string{"project1/tag1", "project1/tag2"},
 			assertFunc: func(t *testing.T, f *fields) {
