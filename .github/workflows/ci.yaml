@@ -34,9 +34,27 @@ jobs:
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.0
       - uses: pre-commit/action@v2.0.3
 
+  test:
+    if: ${{ github.repository == 'sermojohn/gitmono' }}
+    needs: [validate]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          stable: true
+          go-version: '1.17'
+      - name: test
+        run: make test-cover
+      - name: Coveralls
+        uses: coverallsapp/github-action@1.1.3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./coverage.out
+
   release:
     if: ${{ github.repository == 'sermojohn/gitmono' && github.event_name == 'push' }}
-    needs: [validate]
+    needs: [test]
     runs-on: ubuntu-20.04
     concurrency: release
     steps:
