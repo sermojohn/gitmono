@@ -1,9 +1,14 @@
 package main
 
-import "github.com/sermojohn/gitmono"
+import (
+	"io"
+
+	"github.com/sermojohn/gitmono"
+)
 
 type logCommand struct {
 	logger  gitmono.Logger
+	w       io.Writer
 	cmdOpts logOptions
 }
 type logOptions struct {
@@ -11,9 +16,10 @@ type logOptions struct {
 	ToRef   string `short:"t" description:"The ending point of reference range"`
 }
 
-func newLogCommand(logger gitmono.Logger) *logCommand {
+func newLogCommand(logger gitmono.Logger, w io.Writer) *logCommand {
 	return &logCommand{
 		logger: logger,
+		w:      w,
 	}
 }
 
@@ -24,7 +30,7 @@ func (lc *logCommand) Execute(args []string) error {
 		return err
 	}
 
-	printCommits(commits)
+	printCommits(lc.w, commits)
 	return nil
 }
 

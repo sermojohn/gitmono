@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io"
+
 	"github.com/sermojohn/gitmono"
 )
 
@@ -10,12 +12,14 @@ type versionOptions struct {
 }
 type versionCommand struct {
 	versioner gitmono.Versioner
+	w         io.Writer
 	cmdOpts   versionOptions
 }
 
-func newVersionCommand(versioner gitmono.Versioner) *versionCommand {
+func newVersionCommand(versioner gitmono.Versioner, w io.Writer) *versionCommand {
 	return &versionCommand{
 		versioner: versioner,
+		w:         w,
 	}
 }
 
@@ -27,14 +31,14 @@ func (vc *versionCommand) Execute(args []string) error {
 
 	if currentVersion != nil {
 		if vc.cmdOpts.PrintTag {
-			printTag(currentVersion)
+			printTag(vc.w, currentVersion)
 			return nil
 		}
 		if vc.cmdOpts.PrintCommit {
-			printCommit(currentVersion)
+			printCommit(vc.w, currentVersion)
 			return nil
 		}
-		printVersion(currentVersion)
+		printVersion(vc.w, currentVersion)
 	}
 
 	return nil

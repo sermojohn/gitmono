@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io"
+
 	"github.com/sermojohn/gitmono"
 )
 
@@ -10,12 +12,14 @@ type releaseOptions struct {
 }
 type releaseCommand struct {
 	versioner gitmono.Versioner
+	w         io.Writer
 	cmdOpts   releaseOptions
 }
 
-func newReleaseCommand(versioner gitmono.Versioner) *releaseCommand {
+func newReleaseCommand(versioner gitmono.Versioner, w io.Writer) *releaseCommand {
 	return &releaseCommand{
 		versioner: versioner,
+		w:         w,
 	}
 }
 
@@ -27,10 +31,10 @@ func (rc *releaseCommand) Execute(args []string) error {
 
 	if newVersion != nil {
 		if rc.cmdOpts.PrintTag {
-			printTag(newVersion)
+			printTag(rc.w, newVersion)
 			return nil
 		}
-		printVersion(newVersion)
+		printVersion(rc.w, newVersion)
 	}
 	return nil
 }

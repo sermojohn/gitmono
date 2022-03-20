@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io"
+
 	"github.com/sermojohn/gitmono"
 )
 
@@ -10,12 +12,14 @@ type initOptions struct {
 }
 type initCommand struct {
 	versioner gitmono.Versioner
+	w         io.Writer
 	cmdOpts   initOptions
 }
 
-func newInitCommand(versioner gitmono.Versioner) *initCommand {
+func newInitCommand(versioner gitmono.Versioner, w io.Writer) *initCommand {
 	return &initCommand{
 		versioner: versioner,
+		w:         w,
 	}
 }
 
@@ -27,10 +31,10 @@ func (ic *initCommand) Execute(args []string) error {
 
 	if newVersion != nil {
 		if ic.cmdOpts.PrintTag {
-			printTag(newVersion)
+			printTag(ic.w, newVersion)
 			return nil
 		}
-		printVersion(newVersion)
+		printVersion(ic.w, newVersion)
 	}
 	return nil
 }

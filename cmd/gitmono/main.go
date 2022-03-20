@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -47,11 +48,11 @@ func main() {
 		opts        Options
 		flagsParser = flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag|flags.PrintErrors)
 		commands    = []command{
-			newDiffCommand(ctx.differ),
-			newLogCommand(ctx.logger),
-			newInitCommand(ctx.versioner),
-			newReleaseCommand(ctx.versioner),
-			newVersionCommand(ctx.versioner),
+			newDiffCommand(ctx.differ, ctx.logWriter),
+			newLogCommand(ctx.logger, ctx.logWriter),
+			newInitCommand(ctx.versioner, ctx.logWriter),
+			newReleaseCommand(ctx.versioner, ctx.logWriter),
+			newVersionCommand(ctx.versioner, ctx.logWriter),
 		}
 	)
 
@@ -78,22 +79,28 @@ func main() {
 	checkError(err)
 }
 
-func printCommits(commits []*git.Commit) {
+func printCommits(w io.Writer, commits []*git.Commit) {
 	for _, commit := range commits {
-		fmt.Printf("%s %s\n", commit.ID.String(), strings.Trim(commit.Message, "\n"))
+		fmt.Fprintf(w, "%s %s\n", commit.ID.String(), strings.Trim(commit.Message, "\n"))
 	}
 }
 
-func printVersion(version *ctx.VersionedCommit) {
-	fmt.Printf("%s\n", version.GetVersion())
+func printVersion(w io.Writer, version *ctx.VersionedCommit) {
+	fmt.Fprintf(w, "%s\n", version.GetVersion())
 }
 
-func printTag(version *ctx.VersionedCommit) {
-	fmt.Printf("%s\n", version.GetTag())
+func printTag(w io.Writer, version *ctx.VersionedCommit) {
+	fmt.Fprintf(w, "%s\n", version.GetTag())
 }
 
-func printCommit(version *ctx.VersionedCommit) {
-	fmt.Printf("%s\n", version.CommitID)
+func printCommit(w io.Writer, version *ctx.VersionedCommit) {
+	fmt.Fprintf(w, "%s\n", version.CommitID)
+}
+
+func printFiles(w io.Writer, files []string) {
+	for _, file := range files {
+		fmt.Fprintf(w, "%s\n", file)
+	}
 }
 
 func checkError(err error) {
@@ -109,22 +116,23 @@ type context struct {
 	tagger    ctx.Tagger
 	differ    ctx.Differ
 	logger    ctx.Logger
+	logWriter io.Writer
 	// state
 	config  *ctx.Config
 	envVars *ctx.EnvVars
 }
 
 func newContext() (*context, error) {
-	gitClient, err := newGitClient("./")
+	repo, err := git.Open("./")
 	if err != nil {
 		return nil, err
 	}
 
 	config := &ctx.Config{}
 	envVars := loadEnvVars(os.LookupEnv)
-	logger := gitmono.NewLog(gitClient, config)
-	tagger := gitmono.NewTag(gitClient, config, envVars)
-	differ := gitmono.NewDiff(gitClient, config)
+	logger := gitmono.NewLog(repo, config)
+	tagger := gitmono.NewTag(repo, config, envVars)
+	differ := gitmono.NewDiff(repo, config)
 	commitParse := gitmono.NewCommitParse(config)
 	versioner := gitmono.NewVersion(config, logger, tagger, commitParse)
 
@@ -135,24 +143,8 @@ func newContext() (*context, error) {
 		tagger:    tagger,
 		differ:    differ,
 		versioner: versioner,
+		logWriter: os.Stdout,
 	}, nil
-}
-
-type gitClient struct {
-	*git.Repository
-}
-
-func newGitClient(path string) (*gitClient, error) {
-	repo, err := git.Open("./")
-	if err != nil {
-		return nil, err
-	}
-
-	cl := gitClient{
-		Repository: repo,
-	}
-
-	return &cl, nil
 }
 
 func loadEnvVars(loaderFunc func(string) (string, bool)) *ctx.EnvVars {

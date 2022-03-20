@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"io"
 
 	"github.com/sermojohn/gitmono"
 )
@@ -13,10 +13,11 @@ type diffOptions struct {
 
 type diffCommand struct {
 	differ  gitmono.Differ
+	w       io.Writer
 	cmdOpts diffOptions
 }
 
-func newDiffCommand(differ gitmono.Differ) *diffCommand {
+func newDiffCommand(differ gitmono.Differ, w io.Writer) *diffCommand {
 	return &diffCommand{
 		differ: differ,
 	}
@@ -28,7 +29,7 @@ func (dc *diffCommand) Execute(args []string) error {
 		return err
 	}
 
-	printFiles(changedFiles)
+	printFiles(dc.w, changedFiles)
 	return nil
 }
 
@@ -38,10 +39,4 @@ func (dc *diffCommand) name() string {
 
 func (dc *diffCommand) options() interface{} {
 	return &dc.cmdOpts
-}
-
-func printFiles(files []string) {
-	for _, file := range files {
-		fmt.Printf("%s\n", file)
-	}
 }

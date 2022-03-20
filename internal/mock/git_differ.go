@@ -3,7 +3,7 @@ package mock
 import "github.com/gogs/git-module"
 
 type GitDiffer struct {
-	DiffInputs []DiffInput
+	DiffInputs []GitDiffInput
 	DiffOutput *git.Diff
 	DiffError  error
 }
@@ -13,7 +13,7 @@ func (gd *GitDiffer) Diff(rev string, maxFiles, maxFileLines, maxLineChars int, 
 		return nil, gd.DiffError
 	}
 
-	gd.DiffInputs = append(gd.DiffInputs, DiffInput{
+	gd.DiffInputs = append(gd.DiffInputs, GitDiffInput{
 		rev:          rev,
 		maxFiles:     maxFiles,
 		maxFileLines: maxFileLines,
@@ -23,7 +23,7 @@ func (gd *GitDiffer) Diff(rev string, maxFiles, maxFileLines, maxLineChars int, 
 	return gd.DiffOutput, nil
 }
 
-type DiffInput struct {
+type GitDiffInput struct {
 	rev          string
 	maxFiles     int
 	maxFileLines int
