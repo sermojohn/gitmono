@@ -38,5 +38,4 @@ func (l *Log) CommitHashByRevision(rev string) (string, error) {
 	}
 
 	return commit.ID.String(), nil
-
 }
