@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/go-version"
+	ctx "github.com/sermojohn/gitmono"
 )
 
 var (
@@ -43,4 +44,33 @@ func (m patch) Bump(cv *version.Version) (*version.Version, error) {
 	}
 
 	return version.NewVersion(fmt.Sprintf("%d.%d.%d", segments[0], segments[1], segments[2]+1))
+}
+
+// compareBumpers compares two bumpers.
+// Returns -1, 0, or 1 if bumper A is smaller, equal,
+// or larger than the bumper B, respectively.
+func compareBumpers(bumperA, bumperB ctx.Bumper) (int, error) {
+	if bumperA == nil && bumperB == nil {
+		return 0, nil
+	}
+	if bumperA == nil {
+		return -1, nil
+	}
+	if bumperB == nil {
+		return 1, nil
+	}
+
+	versionOne, err := version.NewVersion("1.0.0")
+	if err != nil {
+		return 0, err
+	}
+	versionA, err := bumperA.Bump(versionOne)
+	if err != nil {
+		return 0, err
+	}
+	versionB, err := bumperB.Bump(versionOne)
+	if err != nil {
+		return 0, err
+	}
+	return versionA.Compare(versionB), nil
 }
