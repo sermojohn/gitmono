@@ -72,11 +72,9 @@ func Test_releaseCommand_Execute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rc := &releaseCommand{
-				versioner:    tt.fields.versioner,
-				outputWriter: tt.fields.outputWriter,
-				cmdOpts:      tt.fields.cmdOpts,
-			}
+			rc := newReleaseCommand(tt.fields.versioner, tt.fields.outputWriter)
+			rc.cmdOpts = tt.fields.cmdOpts
+
 			if err := rc.Execute([]string{}); (err != nil) != tt.wantErr {
 				t.Errorf("releaseCommand.Execute() error = %v, wantErr %v", err, tt.wantErr)
 			}

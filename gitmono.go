@@ -51,6 +51,8 @@ type Versioner interface {
 }
 
 // Differ performs diff on the repo
+//
+// Diff two git references and retuns a list of modified files
 type Differ interface {
 	Diff(from, to string) ([]string, error)
 }
@@ -63,6 +65,8 @@ type CommitParser interface {
 }
 
 // Bumper bumps a version to a new version
+//
+// Bump calculates a new version by incrementing (bumping) a version
 type Bumper interface {
 	Bump(*version.Version) (*version.Version, error)
 }

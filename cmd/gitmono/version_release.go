@@ -23,6 +23,7 @@ func newReleaseCommand(versioner gitmono.Versioner, w io.Writer) *releaseCommand
 	}
 }
 
+// Execute trigger the release command
 func (rc *releaseCommand) Execute(args []string) error {
 	newVersion, err := rc.versioner.ReleaseNewVersion(rc.cmdOpts.CommitID)
 	if err != nil {

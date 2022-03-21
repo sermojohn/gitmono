@@ -24,6 +24,7 @@ func newDiffCommand(differ gitmono.Differ, w io.Writer) *diffCommand {
 	}
 }
 
+// Execute trigger the diff command
 func (dc *diffCommand) Execute(args []string) error {
 	changedFiles, err := dc.differ.Diff(dc.cmdOpts.FromRef, dc.cmdOpts.ToRef)
 	if err != nil {

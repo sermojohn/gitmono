@@ -23,6 +23,7 @@ func newInitCommand(versioner gitmono.Versioner, w io.Writer) *initCommand {
 	}
 }
 
+// Execute trigger the init command
 func (ic *initCommand) Execute(args []string) error {
 	newVersion, err := ic.versioner.InitVersion(ic.cmdOpts.CommitID)
 	if err != nil {
