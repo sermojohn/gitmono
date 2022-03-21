@@ -1,24 +1,29 @@
 package main
 
 import (
+	"io"
+
 	"github.com/sermojohn/gitmono"
 )
 
 type initOptions struct {
-	CommitID string `short:"c" description:"The commit ID to release initial versions on"`
+	CommitID string `short:"c" default:"HEAD" description:"The commit ID to release initial versions on"`
 	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type initCommand struct {
-	versioner gitmono.Versioner
-	cmdOpts   initOptions
+	versioner    gitmono.Versioner
+	outputWriter io.Writer
+	cmdOpts      initOptions
 }
 
-func newInitCommand(versioner gitmono.Versioner) *initCommand {
+func newInitCommand(versioner gitmono.Versioner, w io.Writer) *initCommand {
 	return &initCommand{
-		versioner: versioner,
+		versioner:    versioner,
+		outputWriter: w,
 	}
 }
 
+// Execute trigger the init command
 func (ic *initCommand) Execute(args []string) error {
 	newVersion, err := ic.versioner.InitVersion(ic.cmdOpts.CommitID)
 	if err != nil {
@@ -27,10 +32,10 @@ func (ic *initCommand) Execute(args []string) error {
 
 	if newVersion != nil {
 		if ic.cmdOpts.PrintTag {
-			printTag(newVersion)
+			printTag(ic.outputWriter, newVersion)
 			return nil
 		}
-		printVersion(newVersion)
+		printVersion(ic.outputWriter, newVersion)
 	}
 	return nil
 }

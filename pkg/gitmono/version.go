@@ -64,7 +64,7 @@ func (v *Version) GetCurrentVersion() (*ctx.VersionedCommit, error) {
 		CommitID:      commitHash,
 	}
 
-	log.Printf("current version: '%s'\n", currentVersion.Version)
+	log.Printf("project: %s version: %s\n", v.config.Project, currentVersion.Version)
 	return &currentVersion, nil
 }
 
@@ -157,6 +157,7 @@ func (v *Version) createReleaseTag(vc *ctx.VersionedCommit) error {
 	return v.tagger.CreateTag(vc)
 }
 
+// bumpVersion uses the current version to bump depending the commits until the provided commit ID
 func (v *Version) bumpVersion(currentVersion *ctx.VersionedCommit, commitID string) (*ctx.VersionedCommit, error) {
 	newCommits, err := v.logger.Log(currentVersion.CommitID, commitID)
 	if err != nil {
@@ -174,8 +175,6 @@ func (v *Version) bumpVersion(currentVersion *ctx.VersionedCommit, commitID stri
 		if err != nil {
 			return nil, err
 		}
-
-		// bumper is lower than the commit bumper
 		if res == -1 {
 			bump = commitBump
 		}
@@ -200,33 +199,4 @@ func (v *Version) bumpVersion(currentVersion *ctx.VersionedCommit, commitID stri
 		Project:       currentVersion.Project,
 	}
 	return &newVersionedCommit, nil
-}
-
-// compareBumpers compares two bumpers.
-// Returns -1, 0, or 1 if bumper A is smaller, equal,
-// or larger than the bumper B, respectively.
-func compareBumpers(bumperA, bumperB ctx.Bumper) (int, error) {
-	if bumperA == nil {
-		return -1, nil
-	}
-	if bumperA == bumperB {
-		return 0, nil
-	}
-
-	versionOne, err := version.NewVersion("1.0.0")
-	if err != nil {
-		return 0, err
-	}
-
-	versionA, err := bumperA.Bump(versionOne)
-	if err != nil {
-		return 0, err
-	}
-
-	versionB, err := bumperB.Bump(versionOne)
-	if err != nil {
-		return 0, err
-	}
-
-	return versionA.Compare(versionB), nil
 }

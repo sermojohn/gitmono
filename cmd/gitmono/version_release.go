@@ -1,24 +1,29 @@
 package main
 
 import (
+	"io"
+
 	"github.com/sermojohn/gitmono"
 )
 
 type releaseOptions struct {
-	CommitID string `short:"c" description:"The commit ID to release versions on"`
+	CommitID string `short:"c" default:"HEAD" description:"The commit ID to release versions on"`
 	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type releaseCommand struct {
-	versioner gitmono.Versioner
-	cmdOpts   releaseOptions
+	versioner    gitmono.Versioner
+	outputWriter io.Writer
+	cmdOpts      releaseOptions
 }
 
-func newReleaseCommand(versioner gitmono.Versioner) *releaseCommand {
+func newReleaseCommand(versioner gitmono.Versioner, w io.Writer) *releaseCommand {
 	return &releaseCommand{
-		versioner: versioner,
+		versioner:    versioner,
+		outputWriter: w,
 	}
 }
 
+// Execute trigger the release command
 func (rc *releaseCommand) Execute(args []string) error {
 	newVersion, err := rc.versioner.ReleaseNewVersion(rc.cmdOpts.CommitID)
 	if err != nil {
@@ -27,10 +32,10 @@ func (rc *releaseCommand) Execute(args []string) error {
 
 	if newVersion != nil {
 		if rc.cmdOpts.PrintTag {
-			printTag(newVersion)
+			printTag(rc.outputWriter, newVersion)
 			return nil
 		}
-		printVersion(newVersion)
+		printVersion(rc.outputWriter, newVersion)
 	}
 	return nil
 }

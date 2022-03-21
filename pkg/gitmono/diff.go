@@ -38,7 +38,7 @@ func (d *Diff) Diff(from, to string) ([]string, error) {
 		project      = d.config.Project
 	)
 	for _, file := range diffRes.Files {
-		if project == "." || strings.HasPrefix(file.Name, project) {
+		if project == "." || strings.HasPrefix(file.Name, project+"/") {
 			changedFiles = append(changedFiles, file.Name)
 		}
 	}

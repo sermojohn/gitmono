@@ -6,6 +6,7 @@ type Tagger struct {
 	ListProjectVersionTagsOutput []string
 	ListProjectVersionTagsError  error
 	CreateTagError               error
+	CreateTagInputs              []*gitmono.VersionedCommit
 }
 
 func (t *Tagger) ListProjectVersionTags() ([]string, error) {
@@ -17,5 +18,10 @@ func (t *Tagger) ListProjectVersionTags() ([]string, error) {
 }
 
 func (t *Tagger) CreateTag(versionedCommit *gitmono.VersionedCommit) error {
-	return t.CreateTagError
+	if t.CreateTagError != nil {
+		return t.CreateTagError
+	}
+
+	t.CreateTagInputs = append(t.CreateTagInputs, versionedCommit)
+	return nil
 }

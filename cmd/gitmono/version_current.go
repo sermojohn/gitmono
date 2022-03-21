@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io"
+
 	"github.com/sermojohn/gitmono"
 )
 
@@ -9,13 +11,15 @@ type versionOptions struct {
 	PrintCommit bool `long:"print-commit" description:"Print the commit of the current version"`
 }
 type versionCommand struct {
-	versioner gitmono.Versioner
-	cmdOpts   versionOptions
+	versioner    gitmono.Versioner
+	outputWriter io.Writer
+	cmdOpts      versionOptions
 }
 
-func newVersionCommand(versioner gitmono.Versioner) *versionCommand {
+func newVersionCommand(versioner gitmono.Versioner, w io.Writer) *versionCommand {
 	return &versionCommand{
-		versioner: versioner,
+		versioner:    versioner,
+		outputWriter: w,
 	}
 }
 
@@ -27,14 +31,14 @@ func (vc *versionCommand) Execute(args []string) error {
 
 	if currentVersion != nil {
 		if vc.cmdOpts.PrintTag {
-			printTag(currentVersion)
+			printTag(vc.outputWriter, currentVersion)
 			return nil
 		}
 		if vc.cmdOpts.PrintCommit {
-			printCommit(currentVersion)
+			printCommit(vc.outputWriter, currentVersion)
 			return nil
 		}
-		printVersion(currentVersion)
+		printVersion(vc.outputWriter, currentVersion)
 	}
 
 	return nil

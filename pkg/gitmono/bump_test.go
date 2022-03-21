@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-version"
+	ctx "github.com/sermojohn/gitmono"
 )
 
 // whitebox testing for autotag bump interface
@@ -88,4 +89,61 @@ func checkFatal(t *testing.T, err error) {
 		t.Fatalf("Unable to get caller")
 	}
 	t.Fatalf("Fail at %v:%v; %v", file, line, err)
+}
+
+func TestCompareBumpers(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		bumperA ctx.Bumper
+		bumperB ctx.Bumper
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "empty bumpers",
+			args: args{},
+			want: 0,
+		},
+		{
+			name: "one higher feat bumper",
+			args: args{
+				bumperA: patchBumper,
+				bumperB: majorBumper,
+			},
+			want: -1,
+		},
+		{
+			name: "one higher feat bumper",
+			args: args{
+				bumperA: majorBumper,
+				bumperB: minorBumper,
+			},
+			want: 1,
+		},
+		{
+			name: "equal bumpers",
+			args: args{
+				bumperA: minorBumper,
+				bumperB: minorBumper,
+			},
+			want: 0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := compareBumpers(tt.args.bumperA, tt.args.bumperB)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CompareBumpers() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("CompareBumpers() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
