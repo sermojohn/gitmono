@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_releaseCommand_name(t *testing.T) {
+	rc := &releaseCommand{}
+	assert.Equal(t, "release", rc.name())
+}
+
 func Test_releaseCommand_Execute(t *testing.T) {
 	t.Parallel()
 
