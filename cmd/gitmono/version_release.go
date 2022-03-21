@@ -7,7 +7,7 @@ import (
 )
 
 type releaseOptions struct {
-	CommitID string `short:"c" description:"The commit ID to release versions on"`
+	CommitID string `short:"c" default:"HEAD" description:"The commit ID to release versions on"`
 	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type releaseCommand struct {

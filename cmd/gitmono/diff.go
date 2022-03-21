@@ -8,7 +8,7 @@ import (
 
 type diffOptions struct {
 	FromRef string `short:"f" required:"1" description:"The starting point of reference range"`
-	ToRef   string `short:"t" required:"1" description:"The ending point of reference range"`
+	ToRef   string `short:"t" default:"HEAD" description:"The ending point of reference range"`
 }
 
 type diffCommand struct {

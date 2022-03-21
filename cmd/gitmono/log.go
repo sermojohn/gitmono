@@ -12,8 +12,8 @@ type logCommand struct {
 	cmdOpts      logOptions
 }
 type logOptions struct {
-	FromRef string `short:"f" description:"The starting point of reference range"`
-	ToRef   string `short:"t" description:"The ending point of reference range"`
+	FromRef string `short:"f" required:"1" description:"The starting point of reference range"`
+	ToRef   string `short:"t" default:"HEAD" description:"The ending point of reference range"`
 }
 
 func newLogCommand(logger gitmono.Logger, w io.Writer) *logCommand {

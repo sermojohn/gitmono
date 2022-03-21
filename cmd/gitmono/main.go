@@ -69,14 +69,15 @@ func main() {
 		checkError(err)
 	}
 
+	// parse options and trigger command
+	_, err = flagsParser.Parse()
+	checkError(err)
+
+	// options are ready to use
 	log.SetOutput(ioutil.Discard)
 	if opts.Verbose {
 		log.SetOutput(os.Stderr)
 	}
-
-	// parse options and trigger command
-	_, err = flagsParser.Parse()
-	checkError(err)
 }
 
 func printCommits(outputWriter io.Writer, commits []*git.Commit) {

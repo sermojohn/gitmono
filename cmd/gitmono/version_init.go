@@ -7,7 +7,7 @@ import (
 )
 
 type initOptions struct {
-	CommitID string `short:"c" description:"The commit ID to release initial versions on"`
+	CommitID string `short:"c" default:"HEAD" description:"The commit ID to release initial versions on"`
 	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type initCommand struct {
