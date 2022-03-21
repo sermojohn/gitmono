@@ -15,9 +15,9 @@ func Test_diffCommand_Execute(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		differ  gitmono.Differ
-		w       io.Writer
-		cmdOpts diffOptions
+		differ       gitmono.Differ
+		outputWriter io.Writer
+		cmdOpts      diffOptions
 	}
 	tests := []struct {
 		name       string
@@ -33,10 +33,10 @@ func Test_diffCommand_Execute(t *testing.T) {
 					FromRef: "ref-1",
 					ToRef:   "ref-2",
 				},
-				w: &bytes.Buffer{},
+				outputWriter: &bytes.Buffer{},
 			},
 			assertFunc: func(t *testing.T, f *fields) {
-				assert.Equal(t, "test/file1\ntest/file2\n", f.w.(*bytes.Buffer).String())
+				assert.Equal(t, "test/file1\ntest/file2\n", f.outputWriter.(*bytes.Buffer).String())
 			},
 		},
 		{
@@ -47,18 +47,16 @@ func Test_diffCommand_Execute(t *testing.T) {
 					FromRef: "ref-1",
 					ToRef:   "ref-2",
 				},
-				w: &bytes.Buffer{},
+				outputWriter: &bytes.Buffer{},
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dc := &diffCommand{
-				differ:  tt.fields.differ,
-				w:       tt.fields.w,
-				cmdOpts: tt.fields.cmdOpts,
-			}
+			dc := newDiffCommand(tt.fields.differ, tt.fields.outputWriter)
+			dc.cmdOpts = tt.fields.cmdOpts
+
 			if err := dc.Execute([]string{}); (err != nil) != tt.wantErr {
 				t.Errorf("diffCommand.Execute() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -12,14 +12,15 @@ type diffOptions struct {
 }
 
 type diffCommand struct {
-	differ  gitmono.Differ
-	w       io.Writer
-	cmdOpts diffOptions
+	differ       gitmono.Differ
+	outputWriter io.Writer
+	cmdOpts      diffOptions
 }
 
 func newDiffCommand(differ gitmono.Differ, w io.Writer) *diffCommand {
 	return &diffCommand{
-		differ: differ,
+		differ:       differ,
+		outputWriter: w,
 	}
 }
 
@@ -29,7 +30,7 @@ func (dc *diffCommand) Execute(args []string) error {
 		return err
 	}
 
-	printFiles(dc.w, changedFiles)
+	printFiles(dc.outputWriter, changedFiles)
 	return nil
 }
 

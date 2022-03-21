@@ -11,15 +11,15 @@ type versionOptions struct {
 	PrintCommit bool `long:"print-commit" description:"Print the commit of the current version"`
 }
 type versionCommand struct {
-	versioner gitmono.Versioner
-	w         io.Writer
-	cmdOpts   versionOptions
+	versioner    gitmono.Versioner
+	outputWriter io.Writer
+	cmdOpts      versionOptions
 }
 
 func newVersionCommand(versioner gitmono.Versioner, w io.Writer) *versionCommand {
 	return &versionCommand{
-		versioner: versioner,
-		w:         w,
+		versioner:    versioner,
+		outputWriter: w,
 	}
 }
 
@@ -31,14 +31,14 @@ func (vc *versionCommand) Execute(args []string) error {
 
 	if currentVersion != nil {
 		if vc.cmdOpts.PrintTag {
-			printTag(vc.w, currentVersion)
+			printTag(vc.outputWriter, currentVersion)
 			return nil
 		}
 		if vc.cmdOpts.PrintCommit {
-			printCommit(vc.w, currentVersion)
+			printCommit(vc.outputWriter, currentVersion)
 			return nil
 		}
-		printVersion(vc.w, currentVersion)
+		printVersion(vc.outputWriter, currentVersion)
 	}
 
 	return nil

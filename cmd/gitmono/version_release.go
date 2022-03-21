@@ -11,15 +11,15 @@ type releaseOptions struct {
 	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type releaseCommand struct {
-	versioner gitmono.Versioner
-	w         io.Writer
-	cmdOpts   releaseOptions
+	versioner    gitmono.Versioner
+	outputWriter io.Writer
+	cmdOpts      releaseOptions
 }
 
 func newReleaseCommand(versioner gitmono.Versioner, w io.Writer) *releaseCommand {
 	return &releaseCommand{
-		versioner: versioner,
-		w:         w,
+		versioner:    versioner,
+		outputWriter: w,
 	}
 }
 
@@ -31,10 +31,10 @@ func (rc *releaseCommand) Execute(args []string) error {
 
 	if newVersion != nil {
 		if rc.cmdOpts.PrintTag {
-			printTag(rc.w, newVersion)
+			printTag(rc.outputWriter, newVersion)
 			return nil
 		}
-		printVersion(rc.w, newVersion)
+		printVersion(rc.outputWriter, newVersion)
 	}
 	return nil
 }

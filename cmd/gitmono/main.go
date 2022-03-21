@@ -79,27 +79,27 @@ func main() {
 	checkError(err)
 }
 
-func printCommits(w io.Writer, commits []*git.Commit) {
+func printCommits(outputWriter io.Writer, commits []*git.Commit) {
 	for _, commit := range commits {
-		fmt.Fprintf(w, "%s %s\n", commit.ID.String(), strings.Trim(commit.Message, "\n"))
+		fmt.Fprintf(outputWriter, "%s %s\n", commit.ID.String(), strings.Trim(commit.Message, "\n"))
 	}
 }
 
-func printVersion(w io.Writer, version *ctx.VersionedCommit) {
-	fmt.Fprintf(w, "%s\n", version.GetVersion())
+func printVersion(outputWriter io.Writer, version *ctx.VersionedCommit) {
+	fmt.Fprintf(outputWriter, "%s\n", version.GetVersion())
 }
 
-func printTag(w io.Writer, version *ctx.VersionedCommit) {
-	fmt.Fprintf(w, "%s\n", version.GetTag())
+func printTag(outputWriter io.Writer, version *ctx.VersionedCommit) {
+	fmt.Fprintf(outputWriter, "%s\n", version.GetTag())
 }
 
-func printCommit(w io.Writer, version *ctx.VersionedCommit) {
-	fmt.Fprintf(w, "%s\n", version.CommitID)
+func printCommit(outputWriter io.Writer, version *ctx.VersionedCommit) {
+	fmt.Fprintf(outputWriter, "%s\n", version.CommitID)
 }
 
-func printFiles(w io.Writer, files []string) {
+func printFiles(outputWriter io.Writer, files []string) {
 	for _, file := range files {
-		fmt.Fprintf(w, "%s\n", file)
+		fmt.Fprintf(outputWriter, "%s\n", file)
 	}
 }
 

@@ -11,15 +11,15 @@ type initOptions struct {
 	PrintTag bool   `long:"print-tag" description:"Print tag instead of version"`
 }
 type initCommand struct {
-	versioner gitmono.Versioner
-	w         io.Writer
-	cmdOpts   initOptions
+	versioner    gitmono.Versioner
+	outputWriter io.Writer
+	cmdOpts      initOptions
 }
 
 func newInitCommand(versioner gitmono.Versioner, w io.Writer) *initCommand {
 	return &initCommand{
-		versioner: versioner,
-		w:         w,
+		versioner:    versioner,
+		outputWriter: w,
 	}
 }
 
@@ -31,10 +31,10 @@ func (ic *initCommand) Execute(args []string) error {
 
 	if newVersion != nil {
 		if ic.cmdOpts.PrintTag {
-			printTag(ic.w, newVersion)
+			printTag(ic.outputWriter, newVersion)
 			return nil
 		}
-		printVersion(ic.w, newVersion)
+		printVersion(ic.outputWriter, newVersion)
 	}
 	return nil
 }

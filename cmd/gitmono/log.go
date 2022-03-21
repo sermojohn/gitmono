@@ -7,9 +7,9 @@ import (
 )
 
 type logCommand struct {
-	logger  gitmono.Logger
-	w       io.Writer
-	cmdOpts logOptions
+	logger       gitmono.Logger
+	outputWriter io.Writer
+	cmdOpts      logOptions
 }
 type logOptions struct {
 	FromRef string `short:"f" description:"The starting point of reference range"`
@@ -18,8 +18,8 @@ type logOptions struct {
 
 func newLogCommand(logger gitmono.Logger, w io.Writer) *logCommand {
 	return &logCommand{
-		logger: logger,
-		w:      w,
+		logger:       logger,
+		outputWriter: w,
 	}
 }
 
@@ -30,7 +30,7 @@ func (lc *logCommand) Execute(args []string) error {
 		return err
 	}
 
-	printCommits(lc.w, commits)
+	printCommits(lc.outputWriter, commits)
 	return nil
 }
 
