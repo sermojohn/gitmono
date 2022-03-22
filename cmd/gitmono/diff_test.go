@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_diffCommand_name(t *testing.T) {
+	dc := &diffCommand{}
+	assert.Equal(t, "diff", dc.name())
+}
+
 func Test_diffCommand_Execute(t *testing.T) {
 	t.Parallel()
 

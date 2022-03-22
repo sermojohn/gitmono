@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_versionCommand_name(t *testing.T) {
+	vc := &versionCommand{}
+	assert.Equal(t, "version", vc.name())
+}
+
 func Test_versionCommand_Execute(t *testing.T) {
 	t.Parallel()
 

@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_logCommand_name(t *testing.T) {
+	lc := &logCommand{}
+	assert.Equal(t, "log", lc.name())
+}
+
 func Test_logCommand_Execute(t *testing.T) {
 	t.Parallel()
 

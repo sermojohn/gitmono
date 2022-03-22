@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_initCommand_name(t *testing.T) {
+	ic := &initCommand{}
+	assert.Equal(t, "init", ic.name())
+}
+
 func Test_initCommand_Execute(t *testing.T) {
 	t.Parallel()
 
