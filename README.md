@@ -1,6 +1,7 @@
 [![CI Status](https://github.com/sermojohn/gitmono/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/sermojohn/gitmono/actions/workflows/ci.yaml?query=branch%3Amain)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sermojohn/gitmono)](https://goreportcard.com/report/github.com/sermojohn/gitmono)
 [![Coverage Status](https://coveralls.io/repos/github/sermojohn/gitmono/badge.svg?branch=main)](https://coveralls.io/github/sermojohn/gitmono?branch=main)
+![Latest Release](https://img.shields.io/github/v/release/sermojohn/gitmono)
 
 # gitmono
 Git wrapper for monorepos
