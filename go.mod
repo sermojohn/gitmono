@@ -3,7 +3,7 @@ module github.com/sermojohn/gitmono
 go 1.17
 
 require (
-	github.com/gogs/git-module v1.4.0
+	github.com/gogs/git-module v1.6.0
 	github.com/hashicorp/go-version v1.4.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/stretchr/testify v1.7.1
