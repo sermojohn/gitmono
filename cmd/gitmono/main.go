@@ -67,6 +67,7 @@ func run() int {
 		// options are ready to use
 		log.SetOutput(ioutil.Discard)
 		if opts.Verbose {
+			log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 			log.SetOutput(os.Stderr)
 		}
 		*ctx.config = *opts.Config()
@@ -118,7 +119,7 @@ func printFiles(outputWriter io.Writer, files []string) {
 
 func checkError(err error) (bool, int) {
 	if err != nil {
-		fmt.Fprint(os.Stderr)
+		fmt.Fprint(os.Stderr, err)
 		return true, 1
 	}
 	return false, 0

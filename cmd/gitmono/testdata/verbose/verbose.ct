@@ -1,0 +1,19 @@
+$ gitmono init -p project-unreleased -c HEAD -v --dry-run
+no tags found
+new tag: project-unreleased/0.1.0 at: HEAD
+0.1.0
+
+$ gitmono release -p project-breaking-change --version-prefix=v -c HEAD -v --dry-run
+project: project-breaking-change version: 0.1.0
+new tag: project-breaking-change/v1.0.0 at: HEAD
+v1.0.0
+
+$ gitmono diff -p project-breaking-change -f project-breaking-change/v0.1.0 -t HEAD -v
+project-breaking-change/env
+
+$ gitmono log -p project-breaking-change -f project-breaking-change/v0.1.0 -t HEAD -v
+026c1c7e440c8ee5c5449623e322967e845a565c feat!: introduce breaking change commit
+
+$ gitmono version -p project-feature -v
+project: project-feature version: 0.1.0
+0.1.0

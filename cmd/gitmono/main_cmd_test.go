@@ -42,6 +42,10 @@ func TestCommand(t *testing.T) {
 			suite: "testdata/log",
 		},
 		{
+			name:  "verbose flag",
+			suite: "testdata/verbose",
+		},
+		{
 			name:  "help command",
 			suite: "testdata/help",
 		},
@@ -52,8 +56,19 @@ func TestCommand(t *testing.T) {
 		assert.Nil(t, err)
 
 		ts.Commands["gitmono"] = cmdtest.InProcessProgram("gitmono", run)
-		ts.Run(t, false)
+		ts.Run(t, true)
 	}
+}
+
+func TestCommandFailures(t *testing.T) {
+	ts, err := cmdtest.Read("testdata/repofailure")
+	assert.Nil(t, err)
+
+	err = os.Setenv("GIT_REPO_PATH", "invalid_repo_path")
+	assert.Nil(t, err)
+
+	ts.Commands["gitmono"] = cmdtest.InProcessProgram("gitmono", run)
+	ts.Run(t, true)
 }
 
 func setupRepo(t *testing.T) func() {
