@@ -1,0 +1,31 @@
+$ gitmono version -p project-unreleased
+
+$ gitmono version -p project-released
+0.1.0
+
+$ gitmono version -p project-released --print-tag
+project-released/0.1.0
+
+$ gitmono version -p project-released --print-commit
+ba8f2f3b1d01de60e46fcb5f3cb3eb34355a99fd
+
+$ gitmono version -h --> FAIL
+Usage:
+  gitmono [OPTIONS] version [version-OPTIONS]
+
+Application Options:
+  -p=                     The project directory to operate on (default: .)
+  -v                      Enable verbose loggging
+      --dry-run           Do not persist any write action
+      --commit-scheme=    The scheme parse commit messages with (common,
+                          conventional) (default: conventional)
+      --version-prefix=   The prefix to prepend to version
+
+Help Options:
+  -h, --help              Show this help message
+
+[version command options]
+
+    version:
+          --print-tag     Print the tag of the current version
+          --print-commit  Print the commit of the current version

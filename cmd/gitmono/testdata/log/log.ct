@@ -1,0 +1,29 @@
+$ gitmono log -p project-breaking-change -f project-breaking-change/v0.1.0 -t HEAD
+026c1c7e440c8ee5c5449623e322967e845a565c feat!: introduce breaking change commit
+
+$ gitmono log -p project-feature -f project-feature/v0.1.0 -t HEAD
+fd9d203c1e86070599e333c88b7b7c27a08b4d52 feat: introduce backwards-compatible feature commit
+
+$ gitmono log -p project-fix -f project-fix/v0.1.0 -t HEAD
+5b219f2f97ad8adc5c1ae3b702fb0bda99830ab3 fix: introduce fix commit
+
+$ gitmono log -h --> FAIL
+Usage:
+  gitmono [OPTIONS] log [log-OPTIONS]
+
+Application Options:
+  -p=                   The project directory to operate on (default: .)
+  -v                    Enable verbose loggging
+      --dry-run         Do not persist any write action
+      --commit-scheme=  The scheme parse commit messages with (common,
+                        conventional) (default: conventional)
+      --version-prefix= The prefix to prepend to version
+
+Help Options:
+  -h, --help            Show this help message
+
+[log command options]
+
+    log:
+      -f=               The starting point of reference range
+      -t=               The ending point of reference range (default: HEAD)

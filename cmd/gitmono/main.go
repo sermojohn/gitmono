@@ -19,7 +19,7 @@ type Options struct {
 	Project       string `short:"p" default:"." description:"The project directory to operate on"`
 	Verbose       bool   `short:"v" description:"Enable verbose loggging"`
 	DryRun        bool   `long:"dry-run" description:"Do not persist any write action"`
-	CommitScheme  string `long:"commit-scheme" default:"common" description:"The scheme parse commit messages with (common, conventional)"`
+	CommitScheme  string `long:"commit-scheme" default:"conventional" description:"The scheme parse commit messages with (common, conventional)"`
 	VersionPrefix string `long:"version-prefix" default:"" description:"The prefix to prepend to version"`
 }
 
@@ -41,8 +41,14 @@ func (opts *Options) Config() *ctx.Config {
 }
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	ctx, err := newContext()
-	checkError(err)
+	if exit, code := checkError(err); exit {
+		return code
+	}
 
 	var (
 		opts        Options
@@ -58,26 +64,32 @@ func main() {
 
 	// inject options to global component
 	flagsParser.CommandHandler = func(command flags.Commander, args []string) error {
+		// options are ready to use
+		log.SetOutput(ioutil.Discard)
+		if opts.Verbose {
+			log.SetOutput(os.Stderr)
+		}
 		*ctx.config = *opts.Config()
 		return command.Execute(args)
 	}
 	for _, command := range commands {
 		cmd, err := flagsParser.AddCommand(command.name(), "", "", command)
-		checkError(err)
+		if exit, code := checkError(err); exit {
+			return code
+		}
 
 		_, err = cmd.AddGroup(command.name(), "", command.options())
-		checkError(err)
+		if exit, code := checkError(err); exit {
+			return code
+		}
 	}
 
 	// parse options and trigger command
 	_, err = flagsParser.Parse()
-	checkError(err)
-
-	// options are ready to use
-	log.SetOutput(ioutil.Discard)
-	if opts.Verbose {
-		log.SetOutput(os.Stderr)
+	if exit, code := checkError(err); exit {
+		return code
 	}
+	return 0
 }
 
 func printCommits(outputWriter io.Writer, commits []*git.Commit) {
@@ -104,11 +116,12 @@ func printFiles(outputWriter io.Writer, files []string) {
 	}
 }
 
-func checkError(err error) {
+func checkError(err error) (bool, int) {
 	if err != nil {
 		fmt.Fprint(os.Stderr)
-		os.Exit(1)
+		return true, 1
 	}
+	return false, 0
 }
 
 type context struct {
@@ -124,13 +137,14 @@ type context struct {
 }
 
 func newContext() (*context, error) {
-	repo, err := git.Open("./")
+	config := &ctx.Config{}
+	envVars := loadEnvVars(os.LookupEnv)
+
+	repo, err := git.Open(envVars.GitRepoPath)
 	if err != nil {
 		return nil, err
 	}
 
-	config := &ctx.Config{}
-	envVars := loadEnvVars(os.LookupEnv)
 	logger := gitmono.NewLog(repo, config)
 	tagger := gitmono.NewTag(repo, config, envVars)
 	differ := gitmono.NewDiff(repo, config)
@@ -149,13 +163,19 @@ func newContext() (*context, error) {
 }
 
 func loadEnvVars(loaderFunc func(string) (string, bool)) *ctx.EnvVars {
-	envVars := ctx.EnvVars{}
+	envVars := ctx.EnvVars{
+		GitRepoPath: "./",
+	}
 	if value, found := loaderFunc("GIT_COMMITTER_NAME"); found {
 		envVars.CommitterName = value
 	}
 
 	if value, found := loaderFunc("GIT_COMMITTER_EMAIL"); found {
 		envVars.CommitterEmail = value
+	}
+
+	if value, found := loaderFunc("GIT_REPO_PATH"); found {
+		envVars.GitRepoPath = value
 	}
 
 	return &envVars

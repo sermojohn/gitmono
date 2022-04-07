@@ -1,0 +1,34 @@
+$ gitmono release -p project-released --> FAIL
+no commits to release
+
+$ gitmono release -p project-breaking-change --version-prefix=v -c HEAD --dry-run
+v1.0.0
+
+$ gitmono release -p project-feature --version-prefix=v -c HEAD --dry-run
+v0.2.0
+
+$ gitmono release -p project-fix --version-prefix=v -c HEAD --dry-run
+v0.1.1
+
+$ gitmono release -p project-unreleased --version-prefix=v -c HEAD --dry-run
+
+$ gitmono release -h --> FAIL
+Usage:
+  gitmono [OPTIONS] release [release-OPTIONS]
+
+Application Options:
+  -p=                   The project directory to operate on (default: .)
+  -v                    Enable verbose loggging
+      --dry-run         Do not persist any write action
+      --commit-scheme=  The scheme parse commit messages with (common,
+                        conventional) (default: conventional)
+      --version-prefix= The prefix to prepend to version
+
+Help Options:
+  -h, --help            Show this help message
+
+[release command options]
+
+    release:
+      -c=               The commit ID to release versions on (default: HEAD)
+          --print-tag   Print tag instead of version
