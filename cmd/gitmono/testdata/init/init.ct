@@ -1,0 +1,49 @@
+$ gitmono init -p project-unreleased -c HEAD --dry-run
+0.1.0
+
+$ gitmono init -p project-released -c HEAD --dry-run
+
+$ gitmono init -p project-feature -c HEAD --dry-run
+
+$ gitmono init -h --> FAIL
+Usage:
+  gitmono [OPTIONS] init [init-OPTIONS]
+
+Application Options:
+  -p=                   The project directory to operate on (default: .)
+  -v                    Enable verbose loggging
+      --dry-run         Do not persist any write action
+      --commit-scheme=  The scheme parse commit messages with (common,
+                        conventional) (default: conventional)
+      --version-prefix= The prefix to prepend to version
+
+Help Options:
+  -h, --help            Show this help message
+
+[init command options]
+
+    init:
+      -c=               The commit ID to release initial versions on (default:
+                        HEAD)
+          --print-tag   Print tag instead of version
+
+Usage:
+  gitmono [OPTIONS] init [init-OPTIONS]
+
+Application Options:
+  -p=                   The project directory to operate on (default: .)
+  -v                    Enable verbose loggging
+      --dry-run         Do not persist any write action
+      --commit-scheme=  The scheme parse commit messages with (common,
+                        conventional) (default: conventional)
+      --version-prefix= The prefix to prepend to version
+
+Help Options:
+  -h, --help            Show this help message
+
+[init command options]
+
+    init:
+      -c=               The commit ID to release initial versions on (default:
+                        HEAD)
+          --print-tag   Print tag instead of version

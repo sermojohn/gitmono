@@ -25,7 +25,9 @@ func Test_loadEnvVars(t *testing.T) {
 					return "", false
 				},
 			},
-			want: &ctx.EnvVars{},
+			want: &ctx.EnvVars{
+				GitRepoPath: "./",
+			},
 		},
 		{
 			name: "git committer vars",
@@ -41,8 +43,23 @@ func Test_loadEnvVars(t *testing.T) {
 				},
 			},
 			want: &ctx.EnvVars{
+				GitRepoPath:    "./",
 				CommitterName:  "alice",
 				CommitterEmail: "alice@example.com",
+			},
+		},
+		{
+			name: "repo var",
+			args: args{
+				loaderFunc: func(s string) (string, bool) {
+					if s == "GIT_REPO_PATH" {
+						return "testrepo.git", true
+					}
+					return "", false
+				},
+			},
+			want: &ctx.EnvVars{
+				GitRepoPath: "testrepo.git",
 			},
 		},
 	}

@@ -11,6 +11,7 @@ import (
 type EnvVars struct {
 	CommitterName  string
 	CommitterEmail string
+	GitRepoPath    string
 }
 
 // Config defines generic configuration applying to multiple commands
