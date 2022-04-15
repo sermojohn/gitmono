@@ -22,36 +22,35 @@ All commands accept the monorepo project to operate on, using the `-p` flag. Whe
 
 ## Examples
 
-1. Initialise versioning of a project:
+Initialise versioning:
 ```
 gitmono init -p mod1
 
 0.1.0
 ```
 
-2. Get latest version of a project:
+Get version:
 ```
 gitmono version -p mod1
 
 0.1.0
 ```
 
-3. Release new version for a project:
+Release version:
 ```
 gitmono release -p mod1
 
 mod1/0.2.0
 ```
 
-
-4. Get the modified files of a project in the provided reference range:
+Diff modified files:
 ```
 gitmono diff -p mod1 -f head~1 -t head
 
 mod1/go.mod
 ```
 
-5. Get commit log of a project in the provided reference range:
+Get commit log:
 ```
 gitmono log -p mod1 -f head~2 -t head
 
