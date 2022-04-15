@@ -56,7 +56,7 @@ func TestCommand(t *testing.T) {
 		assert.Nil(t, err)
 
 		ts.Commands["gitmono"] = cmdtest.InProcessProgram("gitmono", run)
-		ts.Run(t, true)
+		ts.Run(t, false)
 	}
 }
 
@@ -68,7 +68,7 @@ func TestCommandFailures(t *testing.T) {
 	assert.Nil(t, err)
 
 	ts.Commands["gitmono"] = cmdtest.InProcessProgram("gitmono", run)
-	ts.Run(t, true)
+	ts.Run(t, false)
 }
 
 func setupRepo(t *testing.T) func() {
