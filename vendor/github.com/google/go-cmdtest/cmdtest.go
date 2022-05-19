@@ -31,7 +31,7 @@
 //
 //    var update = flag.Bool("update", false, "update test files with results")
 //    ...
-//    err := ts.Run(t, *update)
+//    ts.Run(t, *update)
 package cmdtest
 
 import (
@@ -45,7 +45,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -77,10 +79,12 @@ import (
 //
 // By default, commands are expected to succeed, and the test will fail
 // otherwise. However, commands that are expected to fail can be marked
-// with a " --> FAIL" suffix.
+// with a " --> FAIL" suffix. The word FAIL may optionally be followed
+// by a non-zero integer specifying the expected exit code.
 //
-// The cases of a test file are executed in order, starting in a freshly
-// created temporary directory.
+// The cases of a test file are executed in order, starting in a freshly created
+// temporary directory. Execution of a file stops with the first case that
+// doesn't behave as expected, but other files in the suite will still run.
 //
 // The built-in commands (initial contents of the Commands map) are:
 //
@@ -113,6 +117,9 @@ type TestSuite struct {
 	// and print out their names for debugging.
 	KeepRootDirs bool
 
+	// If true, don't log while comparing.
+	DisableLogging bool
+
 	files []*testFile
 }
 
@@ -139,6 +146,22 @@ type testCase struct {
 // as well as the name of a file to use for input redirection. It returns the
 // command's output.
 type CommandFunc func(args []string, inputFile string) ([]byte, error)
+
+// ExitCodeErr is an error that a CommandFunc can return to provide an exit
+// code. Tests can check the code by writing the desired value after "--> FAIL".
+//
+// ExitCodeErr is only necessary when writing commands that don't return errors
+// that come from the OS. Commands that return the error from os/exec.Cmd.Run
+// or functions in the os package like Chdir and Mkdir don't need to use this,
+// because those errors already contain error codes.
+type ExitCodeErr struct {
+	Msg  string
+	Code int
+}
+
+func (e *ExitCodeErr) Error() string {
+	return fmt.Sprintf("%s (code %d)", e.Msg, e.Code)
+}
 
 // Read reads all the files in dir with extension ".ct" and returns a TestSuite
 // containing them. See the TestSuite documentation for syntax.
@@ -287,9 +310,13 @@ func (ts *TestSuite) Run(t *testing.T, update bool) {
 
 // compare runs a subtest for each file in the test suite. See Run.
 func (ts *TestSuite) compare(t *testing.T) {
+	log := t.Logf
+	if ts.DisableLogging {
+		log = noopLogger
+	}
 	for _, tf := range ts.files {
 		t.Run(strings.TrimSuffix(tf.filename, ".ct"), func(t *testing.T) {
-			if s := tf.compare(t.Logf); s != "" {
+			if s := tf.compare(log); s != "" {
 				t.Error(s)
 			}
 		})
@@ -297,21 +324,6 @@ func (ts *TestSuite) compare(t *testing.T) {
 }
 
 var noopLogger = func(_ string, _ ...interface{}) {}
-
-// compareReturningError is similar to compare, but it returns
-// errors/differences in an error. It is used in tests for this package.
-func (ts *TestSuite) compareReturningError() error {
-	var ss []string
-	for _, tf := range ts.files {
-		if s := tf.compare(noopLogger); s != "" {
-			ss = append(ss, s)
-		}
-	}
-	if len(ss) > 0 {
-		return errors.New(strings.Join(ss, ""))
-	}
-	return nil
-}
 
 func (tf *testFile) compare(log func(string, ...interface{})) string {
 	if err := tf.execute(log); err != nil {
@@ -405,25 +417,23 @@ func (tf *testFile) execute(log func(string, ...interface{})) error {
 	return nil
 }
 
-// A fatal error stops a test.
-type fatal struct{ error }
-
 // Run the test case by executing the commands. The concatenated output from all commands
 // is saved in tc.gotOutput.
-// An error is returned if: a command that should succeed instead failed; a command that should
-// fail instead succeeded; or a built-in command was called incorrectly.
+// An error is returned if any of the following occur:
+//   - A command that should succeed instead failed.
+//   - A command that should fail instead succeeded.
+//   - A command that should fail with a particular error code instead failed
+//     with a different one.
+//   - A built-in command was called incorrectly.
 func (tc *testCase) execute(ts *TestSuite, log func(string, ...interface{})) error {
-	const failMarker = " --> FAIL"
-
 	tc.gotOutput = nil
 	var allout []byte
-	var err error
 	for i, cmd := range tc.commands {
-		wantFail := false
-		if strings.HasSuffix(cmd, failMarker) {
-			cmd = strings.TrimSuffix(cmd, failMarker)
-			wantFail = true
+		cmd, wantFail, wantExitCode, err := parseCommand(cmd)
+		if err != nil {
+			return err
 		}
+		_ = wantExitCode
 		args := strings.Fields(cmd)
 		for i := range args {
 			args[i], err = expandVariables(args[i], os.LookupEnv)
@@ -444,15 +454,24 @@ func (tc *testCase) execute(ts *TestSuite, log func(string, ...interface{})) err
 			return fmt.Errorf("%d: no such command %q", tc.startLine+i, name)
 		}
 		out, err := f(args, infile)
-		if _, ok := err.(fatal); ok {
-			return fmt.Errorf("%d: command %q failed fatally with %v", tc.startLine+i, cmd, err)
-		}
+		line := tc.startLine + i
 		if err == nil && wantFail {
-			return fmt.Errorf("%d: %q succeeded, but it was expected to fail", tc.startLine+i, cmd)
+			return fmt.Errorf("%d: %q succeeded, but it was expected to fail", line, cmd)
 		}
 		if err != nil && !wantFail {
-			return fmt.Errorf("%d: %q failed with %v. Output:\n%s", tc.startLine+i, cmd, err, out)
+			return fmt.Errorf("%d: %q failed with %v. Output:\n%s", line, cmd, err, out)
 		}
+		if err != nil && wantFail && wantExitCode != 0 {
+			gotExitCode, ok := extractExitCode(err)
+			if !ok {
+				return fmt.Errorf("%d: %q failed without an exit code, but one was expected", line, cmd)
+			}
+			if gotExitCode != wantExitCode {
+				return fmt.Errorf("%d: %q failed with exit code %d, but %d was expected",
+					line, cmd, gotExitCode, wantExitCode)
+			}
+		}
+
 		log("%s\n", string(out))
 		allout = append(allout, out...)
 	}
@@ -463,6 +482,47 @@ func (tc *testCase) execute(ts *TestSuite, log func(string, ...interface{})) err
 		tc.gotOutput = strings.Split(s, "\n")
 	}
 	return nil
+}
+
+func parseCommand(cmdline string) (cmd string, wantFail bool, wantExitCode int, err error) {
+	const failMarker = " --> FAIL"
+	i := strings.LastIndex(cmdline, failMarker)
+	if i < 0 {
+		return cmdline, false, 0, nil
+	}
+	cmd = cmdline[:i]
+	wantFail = true
+	rest := strings.TrimSpace(cmdline[i+len(failMarker):])
+	if len(rest) > 0 {
+		wantExitCode, err = strconv.Atoi(rest)
+		if err != nil {
+			return "", false, 0, err
+		}
+		if wantExitCode == 0 {
+			return "", false, 0, errors.New("cannot use 0 as a FAIL exit code")
+		}
+	}
+	return cmd, wantFail, wantExitCode, nil
+}
+
+// extractExitCode extracts an exit code from err and returns it and true.
+// If one can't be found, the second return value is false.
+func extractExitCode(err error) (code int, ok bool) {
+	var (
+		errno syscall.Errno
+		ee    *exec.ExitError
+		ece   *ExitCodeErr
+	)
+	switch {
+	case errors.As(err, &errno):
+		return int(errno), true
+	case errors.As(err, &ee):
+		return ee.ExitCode(), true
+	case errors.As(err, &ece):
+		return ece.Code, true
+	default:
+		return 0, false
+	}
 }
 
 // Program defines a command function that will run the executable at path using
@@ -486,10 +546,11 @@ func Program(path string) CommandFunc {
 // behave like an actual main function except that it returns an error code
 // instead of calling os.Exit.
 // Before calling f:
-// - os.Args is set to the concatenation of name and args.
-// - If inputFile is non-empty, it is redirected to standard input.
-// - Standard output and standard error are redirected to a buffer, which is
-// returned.
+//
+//   - os.Args is set to the concatenation of name and args.
+//   - If inputFile is non-empty, it is redirected to standard input.
+//   - Standard output and standard error are redirected to a buffer, which is
+//     returned.
 func InProcessProgram(name string, f func() int) CommandFunc {
 	return func(args []string, inputFile string) ([]byte, error) {
 		origArgs := os.Args
@@ -537,7 +598,10 @@ func InProcessProgram(name string, f func() int) CommandFunc {
 			return nil, err
 		}
 		if res != 0 {
-			err = fmt.Errorf("%s failed with exit code %d", name, res)
+			err = &ExitCodeErr{
+				Msg:  fmt.Sprintf("%s failed", name),
+				Code: res,
+			}
 		}
 		return buf.Bytes(), err
 	}
@@ -651,10 +715,10 @@ func writeLines(w io.Writer, lines []string) error {
 func fixedArgBuiltin(nargs int, f func([]string) ([]byte, error)) CommandFunc {
 	return func(args []string, inputFile string) ([]byte, error) {
 		if len(args) != nargs {
-			return nil, fatal{fmt.Errorf("need exactly %d arguments", nargs)}
+			return nil, fmt.Errorf("need exactly %d arguments", nargs)
 		}
 		if inputFile != "" {
-			return nil, fatal{errors.New("input redirection not supported")}
+			return nil, errors.New("input redirection not supported")
 		}
 		return f(args)
 	}
@@ -680,7 +744,7 @@ func cdCmd(args []string) ([]byte, error) {
 // Also, literal "\n" in the input will be replaced by \n.
 func echoCmd(args []string, inputFile string) ([]byte, error) {
 	if inputFile != "" {
-		return nil, fatal{errors.New("input redirection not supported")}
+		return nil, errors.New("input redirection not supported")
 	}
 	s := strings.Join(args, " ")
 	s = strings.Replace(s, "\\n", "\n", -1)
@@ -695,10 +759,10 @@ func echoCmd(args []string, inputFile string) ([]byte, error) {
 // Also, literal "\n" in the input will be replaced by \n.
 func fechoCmd(args []string, inputFile string) ([]byte, error) {
 	if len(args) < 1 {
-		return nil, fatal{errors.New("need at least 1 argument")}
+		return nil, errors.New("need at least 1 argument")
 	}
 	if inputFile != "" {
-		return nil, fatal{errors.New("input redirection not supported")}
+		return nil, errors.New("input redirection not supported")
 	}
 	if err := checkPath(args[0]); err != nil {
 		return nil, err
@@ -745,7 +809,7 @@ func setenvCmd(args []string) ([]byte, error) {
 
 func checkPath(path string) error {
 	if strings.ContainsRune(path, '/') || strings.ContainsRune(path, '\\') {
-		return fatal{fmt.Errorf("argument must be in the current directory (%q has a '/')", path)}
+		return fmt.Errorf("argument must be in the current directory (%q has a '/')", path)
 	}
 	return nil
 }
