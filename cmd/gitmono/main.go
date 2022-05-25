@@ -40,14 +40,21 @@ func (opts *Options) Config() *ctx.Config {
 	}
 }
 
+const (
+	// SuccessExitCode signls a successful execution
+	SuccessExitCode = 0
+	// FailureExitCode signals a failed execution
+	FailureExitCode = 1
+)
+
 func main() {
-	os.Exit(run())
+	os.Exit(int(run()))
 }
 
 func run() int {
 	ctx, err := newContext()
-	if exit, code := checkError(err); exit {
-		return code
+	if err != nil {
+		return FailureExitCode
 	}
 
 	var (
@@ -75,22 +82,23 @@ func run() int {
 	}
 	for _, command := range commands {
 		cmd, err := flagsParser.AddCommand(command.name(), "", "", command)
-		if exit, code := checkError(err); exit {
-			return code
+		if err != nil {
+			return FailureExitCode
 		}
 
 		_, err = cmd.AddGroup(command.name(), "", command.options())
-		if exit, code := checkError(err); exit {
-			return code
+		if err != nil {
+			return FailureExitCode
 		}
 	}
 
 	// parse options and trigger command
 	_, err = flagsParser.Parse()
-	if exit, code := checkError(err); exit {
-		return code
+	if err != nil {
+		return FailureExitCode
 	}
-	return 0
+
+	return SuccessExitCode
 }
 
 func printCommits(outputWriter io.Writer, commits []*git.Commit) {
@@ -115,14 +123,6 @@ func printFiles(outputWriter io.Writer, files []string) {
 	for _, file := range files {
 		fmt.Fprintf(outputWriter, "%s\n", file)
 	}
-}
-
-func checkError(err error) (bool, int) {
-	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-		return true, 1
-	}
-	return false, 0
 }
 
 type context struct {
