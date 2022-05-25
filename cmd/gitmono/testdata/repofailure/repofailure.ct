@@ -1,2 +1,2 @@
 $ gitmono init -v --> FAIL
-file does not exist
+exit status 128 - fatal: not a git repository (or any of the parent directories): .git

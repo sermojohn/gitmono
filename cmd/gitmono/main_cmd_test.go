@@ -64,7 +64,7 @@ func TestCommandFailures(t *testing.T) {
 	ts, err := cmdtest.Read("testdata/repofailure")
 	assert.Nil(t, err)
 
-	err = os.Setenv("GIT_REPO_PATH", "invalid_repo_path")
+	err = os.Setenv("GIT_REPO_PATH", "../")
 	assert.Nil(t, err)
 
 	ts.Commands["gitmono"] = cmdtest.InProcessProgram("gitmono", run)
