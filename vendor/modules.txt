@@ -1,7 +1,7 @@
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/gogs/git-module v1.6.0
+# github.com/gogs/git-module v1.6.1
 ## explicit; go 1.13
 github.com/gogs/git-module
 # github.com/google/go-cmdtest v0.4.0
@@ -29,13 +29,13 @@ github.com/mcuadros/go-version
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/stretchr/testify v1.7.1
+# github.com/stretchr/testify v1.7.2
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 # golang.org/x/sys v0.0.0-20210502180810-71e4cd670f79
 ## explicit; go 1.12
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+# gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
