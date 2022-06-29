@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmdtest v0.4.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.0
 )
 
 require (
