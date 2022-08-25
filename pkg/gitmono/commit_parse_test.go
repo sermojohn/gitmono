@@ -97,6 +97,13 @@ func Test_conventionalCommitParse(t *testing.T) {
 			want: majorBumper,
 		},
 		{
+			name: "use breaking change with exclamation",
+			args: args{
+				msg: "fix!: bug that introduces breaking API change\nAPI change",
+			},
+			want: majorBumper,
+		},
+		{
 			name: "feature implmenentation",
 			args: args{
 				msg: "feat: application feature",
