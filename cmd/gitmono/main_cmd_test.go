@@ -11,6 +11,9 @@ import (
 )
 
 // TestCommand uses google/go-cmdtest to run commands and verify output
+//
+// Use UPDATE_TESTDATA=true to perform update of testdata file from test output.
+// By default go-cmdtest runs in compare mode which compares testdata with actual test output.
 func TestCommand(t *testing.T) {
 	t.Parallel()
 
@@ -56,7 +59,7 @@ func TestCommand(t *testing.T) {
 		assert.Nil(t, err)
 
 		ts.Commands["gitmono"] = cmdtest.InProcessProgram("gitmono", run)
-		ts.Run(t, false)
+		ts.Run(t, isUpdateTestdataMode())
 	}
 }
 
@@ -68,7 +71,13 @@ func TestCommandFailures(t *testing.T) {
 	assert.Nil(t, err)
 
 	ts.Commands["gitmono"] = cmdtest.InProcessProgram("gitmono", run)
-	ts.Run(t, false)
+	ts.Run(t, isUpdateTestdataMode())
+}
+
+func isUpdateTestdataMode() bool {
+	updateMode, found := os.LookupEnv("UPDATE_TESTDATA")
+	return found && updateMode == "true"
+
 }
 
 func setupRepo(t *testing.T) func() {
