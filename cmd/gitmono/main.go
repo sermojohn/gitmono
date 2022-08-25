@@ -85,10 +85,11 @@ func run() int {
 		}
 	}
 
-	// parse options and trigger command
+	// parse options to trigger command
+	// errors are logged by the flags library
 	_, err = flagsParser.Parse()
-	if exit, code := checkError(err); exit {
-		return code
+	if err != nil {
+		return 1
 	}
 	return 0
 }
